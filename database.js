@@ -242,8 +242,16 @@ Record.find = function(query = {}) {
 // Override Record.findById to support fallback
 Record.findById = async function(id) {
   if (!dbConnected) {
-    console.log('🔄 Using fallback storage for record findById...');
-    return fallbackRecords.find(r => r._id === id) || null;
+    console.log('� Using fallback storage for record findById...');
+    console.log('   Looking for ID:', id);
+    console.log('   Available IDs:', fallbackRecords.map(r => r._id));
+    const found = fallbackRecords.find(r => r._id === id);
+    if (found) {
+      console.log('   ✅ Found record:', found.name);
+    } else {
+      console.log('   ❌ Record not found');
+    }
+    return found || null;
   }
   return originalRecordFindById(id);
 };

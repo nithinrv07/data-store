@@ -172,9 +172,15 @@ app.delete('/api/records/:id', async (req, res, next) => {
 // ==================== EXPORT ====================
 app.get('/api/export/excel/:id', async (req, res, next) => {
   try {
+    console.log('📥 Excel export request for ID:', req.params.id);
     const record = await Record.findById(req.params.id);
-    if (!record) return res.status(404).json({ success: false, message: 'Record not found' });
+    
+    if (!record) {
+      console.log('❌ Record not found:', req.params.id);
+      return res.status(404).json({ success: false, message: 'Record not found' });
+    }
 
+    console.log('✅ Found record, generating Excel:', record.name);
     const workbook = new excel.Workbook();
     const sheet = workbook.addWorksheet('Record Data');
 
@@ -201,16 +207,22 @@ app.get('/api/export/excel/:id', async (req, res, next) => {
     await workbook.xlsx.write(res);
     res.end();
   } catch (err) {
-    console.error('❌ Excel export error:', err.message);
+    console.error('❌ Excel export error:', err.message, err.stack);
     next(err);
   }
 });
 
 app.get('/api/export/word/:id', async (req, res, next) => {
   try {
+    console.log('📥 Word export request for ID:', req.params.id);
     const record = await Record.findById(req.params.id);
-    if (!record) return res.status(404).json({ success: false, message: 'Record not found' });
+    
+    if (!record) {
+      console.log('❌ Record not found:', req.params.id);
+      return res.status(404).json({ success: false, message: 'Record not found' });
+    }
 
+    console.log('✅ Found record, generating Word document:', record.name);
     const doc = new docx.Document({
       sections: [{
         children: [
@@ -251,7 +263,7 @@ app.get('/api/export/word/:id', async (req, res, next) => {
     console.log('✅ Exporting to Word:', record._id, 'Size:', buffer.length);
     res.send(buffer);
   } catch (err) {
-    console.error('❌ Word export error:', err.message);
+    console.error('❌ Word export error:', err.message, err.stack);
     next(err);
   }
 });

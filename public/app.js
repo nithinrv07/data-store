@@ -277,57 +277,77 @@ detailsModal.addEventListener('click', (e) => {
 
 // ==================== EXPORT ====================
 btnExcel.addEventListener('click', async () => {
-  if (!currentActiveRecordId) return;
+  if (!currentActiveRecordId) {
+    alert('No record selected');
+    return;
+  }
   
   try {
     const token = tokenManager.getToken();
     const url = `/api/export/excel/${currentActiveRecordId}`;
+    console.log('📥 Requesting Excel export from:', url);
     
     const res = await fetch(url, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     
+    console.log('Response status:', res.status, res.statusText);
+    
     if (!res.ok) {
-      throw new Error(`Export failed with status ${res.status}`);
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(`Export failed with status ${res.status}: ${errorData.message || ''}`);
     }
     
     const blob = await res.blob();
+    console.log('✅ Received blob:', blob.size, 'bytes');
+    
     const blobUrl = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = blobUrl;
     link.download = `record-${currentActiveRecordId}.xlsx`;
     link.click();
     window.URL.revokeObjectURL(blobUrl);
+    console.log('✅ Excel export completed');
   } catch (err) {
-    console.error('Excel export error:', err);
+    console.error('❌ Excel export error:', err);
     alert('Failed to export to Excel: ' + err.message);
   }
 });
 
 btnWord.addEventListener('click', async () => {
-  if (!currentActiveRecordId) return;
+  if (!currentActiveRecordId) {
+    alert('No record selected');
+    return;
+  }
   
   try {
     const token = tokenManager.getToken();
     const url = `/api/export/word/${currentActiveRecordId}`;
+    console.log('📥 Requesting Word export from:', url);
     
     const res = await fetch(url, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     
+    console.log('Response status:', res.status, res.statusText);
+    
     if (!res.ok) {
-      throw new Error(`Export failed with status ${res.status}`);
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(`Export failed with status ${res.status}: ${errorData.message || ''}`);
     }
     
     const blob = await res.blob();
+    console.log('✅ Received blob:', blob.size, 'bytes');
+    
     const blobUrl = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = blobUrl;
     link.download = `record-${currentActiveRecordId}.docx`;
     link.click();
     window.URL.revokeObjectURL(blobUrl);
+    console.log('✅ Word export completed');
   } catch (err) {
-    console.error('Word export error:', err);
+    console.error('❌ Word export error:', err);
     alert('Failed to export to Word: ' + err.message);
   }
 });
