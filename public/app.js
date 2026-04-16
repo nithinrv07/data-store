@@ -310,6 +310,35 @@ btnWord.addEventListener('click', () => {
   });
 });
 
+// ==================== DELETE ====================
+const btnDeleteRecord = document.getElementById('btn-delete-record');
+btnDeleteRecord.addEventListener('click', async () => {
+  if (!currentActiveRecordId) return;
+  
+  if (!confirm('Are you sure you want to delete this record? This action cannot be undone.')) {
+    return;
+  }
+  
+  try {
+    const token = tokenManager.getToken();
+    const res = await fetch(`/api/records/${currentActiveRecordId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    const data = await res.json();
+    if (data.success) {
+      detailsModal.classList.add('hidden');
+      currentActiveRecordId = null;
+      fetchRecords();
+    } else {
+      alert('Failed to delete record');
+    }
+  } catch (err) {
+    alert('Error deleting record');
+  }
+});
+
 // ==================== INITIALIZE ====================
 // Skip login - go directly to dashboard
 showView('dashboard');

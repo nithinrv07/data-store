@@ -84,6 +84,11 @@ body {
   color: white;
 }
 .alt-btn:hover { background-color: #334155; }
+.danger-btn {
+  background-color: var(--warning);
+  color: white;
+}
+.danger-btn:hover { background-color: #dc2626; }
 
 /* Forms */
 .card {

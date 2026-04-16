@@ -1,9 +1,36 @@
 const mongoose = require('mongoose');
+const fs = require('fs');
+const path = require('path');
 
 // Attempt to connect to cloud MongoDB via environment variable
 const MONGODB_URI = process.env.MONGODB_URI;
 
 let dbConnected = false;
+
+// Fallback storage file
+const FALLBACK_DATA_FILE = path.join(__dirname, '.fallback_data.json');
+
+// Load fallback data from file
+const loadFallbackData = () => {
+  try {
+    if (fs.existsSync(FALLBACK_DATA_FILE)) {
+      const data = fs.readFileSync(FALLBACK_DATA_FILE, 'utf8');
+      return JSON.parse(data);
+    }
+  } catch (err) {
+    console.error('Error loading fallback data:', err.message);
+  }
+  return { records: [] };
+};
+
+// Save fallback data to file
+const saveFallbackData = (data) => {
+  try {
+    fs.writeFileSync(FALLBACK_DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Error saving fallback data:', err.message);
+  }
+};
 
 const connectDB = async () => {
   if (!MONGODB_URI) {
@@ -96,7 +123,8 @@ const fallbackUsers = [
 ];
 
 // Fallback storage for records (when DB is not available)
-const fallbackRecords = [];
+const fallbackData = loadFallbackData();
+const fallbackRecords = fallbackData.records;
 
 // Query builder for chaining (mimics Mongoose Query)
 class QueryBuilder {
@@ -164,6 +192,7 @@ Record.create = async function(data) {
       updatedAt: new Date()
     };
     fallbackRecords.push(record);
+    saveFallbackData({ records: fallbackRecords });
     console.log('✅ Record saved to fallback storage:', id);
     return record;
   }
@@ -224,6 +253,7 @@ Record.findByIdAndUpdate = async function(id, data, options = {}) {
       ...data,
       updatedAt: new Date()
     };
+    saveFallbackData({ records: fallbackRecords });
     if (options.new) {
       return fallbackRecords[index];
     }
@@ -241,6 +271,7 @@ Record.findByIdAndDelete = async function(id) {
       return null;
     }
     const deleted = fallbackRecords.splice(index, 1);
+    saveFallbackData({ records: fallbackRecords });
     return deleted[0];
   }
   return originalRecordFindByIdAndDelete(id);

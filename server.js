@@ -216,10 +216,8 @@ app.get('/api/export/word/:id', async (req, res, next) => {
           new docx.Paragraph({
             text: 'Record Details',
             heading: docx.HeadingLevel.HEADING_1,
-            bold: true
-          }),
-          new docx.Paragraph({
-            text: ''
+            bold: true,
+            spacing: { after: 200 }
           }),
           new docx.Table({
             width: { size: 100, type: docx.WidthType.PERCENTAGE },
@@ -228,42 +226,40 @@ app.get('/api/export/word/:id', async (req, res, next) => {
                 cells: [
                   new docx.TableCell({
                     children: [new docx.Paragraph({ text: 'Field', bold: true })],
-                    width: { size: 30, type: docx.WidthType.PERCENTAGE }
                   }),
                   new docx.TableCell({
                     children: [new docx.Paragraph({ text: 'Value', bold: true })],
-                    width: { size: 70, type: docx.WidthType.PERCENTAGE }
                   })
                 ]
               }),
               new docx.TableRow({
                 cells: [
                   new docx.TableCell({ children: [new docx.Paragraph('Name')] }),
-                  new docx.TableCell({ children: [new docx.Paragraph(record.name)] })
+                  new docx.TableCell({ children: [new docx.Paragraph(String(record.name))] })
                 ]
               }),
               new docx.TableRow({
                 cells: [
                   new docx.TableCell({ children: [new docx.Paragraph('Date of Birth')] }),
-                  new docx.TableCell({ children: [new docx.Paragraph(record.dob)] })
+                  new docx.TableCell({ children: [new docx.Paragraph(String(record.dob))] })
                 ]
               }),
               new docx.TableRow({
                 cells: [
                   new docx.TableCell({ children: [new docx.Paragraph('Address')] }),
-                  new docx.TableCell({ children: [new docx.Paragraph(record.address)] })
+                  new docx.TableCell({ children: [new docx.Paragraph(String(record.address))] })
                 ]
               }),
               new docx.TableRow({
                 cells: [
                   new docx.TableCell({ children: [new docx.Paragraph('Email')] }),
-                  new docx.TableCell({ children: [new docx.Paragraph(record.email || '-')] })
+                  new docx.TableCell({ children: [new docx.Paragraph(String(record.email || '-'))] })
                 ]
               }),
               new docx.TableRow({
                 cells: [
                   new docx.TableCell({ children: [new docx.Paragraph('Phone')] }),
-                  new docx.TableCell({ children: [new docx.Paragraph(record.phone || '-')] })
+                  new docx.TableCell({ children: [new docx.Paragraph(String(record.phone || '-'))] })
                 ]
               })
             ]
@@ -272,10 +268,9 @@ app.get('/api/export/word/:id', async (req, res, next) => {
       }]
     });
 
+    const buffer = await docx.Packer.toBuffer(doc);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
     res.setHeader('Content-Disposition', `attachment; filename="record-${record._id}.docx"`);
-    
-    const buffer = await docx.Packer.toBuffer(doc);
     res.send(buffer);
   } catch (err) {
     next(err);
