@@ -54,8 +54,15 @@ npm start
 
 ## 🔐 Default Credentials
 
+**Without MongoDB (Fallback Authentication)**:
+- **Username**: `abinaya`
+- **Password**: `abinaya@29`
+
+**With MongoDB (Default Admin)**:
 - **Username**: `admin`
 - **Password**: `password123`
+
+⚠️ **Note**: The app works WITHOUT MongoDB using fallback authentication. If MongoDB is not configured, the app automatically uses the fallback credentials above.
 
 ## 📦 Deployment to Vercel
 
@@ -143,6 +150,25 @@ abinaya-project/
 4. Minify CSS and JavaScript for production
 
 ## 🐛 Troubleshooting
+
+### Login Fails on Deployed App (Vercel)
+
+**Issue**: You can login locally but get "Invalid credentials" on Vercel.
+
+**Solution**:
+1. **Option A - Use Fallback Auth (No MongoDB needed)**:
+   - Use credentials: `abinaya / abinaya@29`
+   - Works without any environment variables
+   - Good for testing
+
+2. **Option B - Configure MongoDB on Vercel**:
+   - Create free MongoDB cluster at https://www.mongodb.com/cloud/atlas
+   - Get connection string from MongoDB
+   - Add `MONGODB_URI` environment variable in Vercel dashboard:
+     - Project Settings → Environment Variables
+     - Add `MONGODB_URI=mongodb+srv://...`
+   - Redeploy the app
+   - Use credentials: `admin / password123`
 
 ### MongoDB Connection Issues
 - Verify connection string in `.env`

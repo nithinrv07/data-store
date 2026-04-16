@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -52,16 +54,19 @@ app.post('/api/login', authLimiter, async (req, res, next) => {
       return res.status(400).json({ success: false, errors: validationError });
     }
 
+    console.log(`🔐 Login attempt for user: ${username}`);
     const user = await User.findOne({ username, password });
 
     if (user) {
       const token = generateToken(user._id || user.username, user.username);
+      console.log(`✅ Login successful for user: ${username}`);
       res.json({
         success: true,
         token,
         user: { username: user.username }
       });
     } else {
+      console.log(`❌ Login failed for user: ${username} (invalid credentials)`);
       res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
   } catch (err) {

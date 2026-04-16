@@ -103,7 +103,12 @@ User.findOne = async function(query) {
   if (!dbConnected) {
     // Use fallback authentication
     const user = fallbackUsers.find(u => u.username === query.username && u.password === query.password);
-    return user || null;
+    if (user) {
+      console.log('✅ User authenticated via fallback:', query.username);
+      return { username: user.username, password: user.password, _id: 'fallback-user' };
+    }
+    console.log('❌ Fallback authentication failed for:', query.username);
+    return null;
   }
   return originalUserFindOne(query);
 };
