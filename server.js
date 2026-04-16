@@ -77,22 +77,31 @@ app.post('/api/login', authLimiter, async (req, res, next) => {
 // ==================== RECORDS ====================
 app.post('/api/records', async (req, res, next) => {
   try {
+    console.log('📥 POST /api/records - Creating new record');
+    console.log('📋 Payload:', JSON.stringify(req.body, null, 2));
+    
     const validationError = validateRecord(req.body);
     if (validationError) {
+      console.log('❌ Validation errors:', validationError);
       return res.status(400).json({ success: false, errors: validationError });
     }
 
     const sanitized = sanitizeRecord(req.body);
+    console.log('✅ Data sanitized, creating record...');
+    
     const record = await Record.create(sanitized);
+    console.log('✅ Record created:', record._id, record.name);
 
     res.status(201).json({ success: true, record });
   } catch (err) {
+    console.error('❌ Error creating record:', err.message, err.stack);
     next(err);
   }
 });
 
 app.get('/api/records', async (req, res, next) => {
   try {
+    console.log('📥 GET /api/records called');
     const { search, sortBy = 'createdAt', order = 'desc' } = req.query;
 
     let query = {};
@@ -109,10 +118,27 @@ app.get('/api/records', async (req, res, next) => {
     const sortObj = {};
     sortObj[sortBy] = order === 'asc' ? 1 : -1;
 
-    const records = await Record.find(query).sort(sortObj);
-
+    console.log('🔍 Querying records with sort:', JSON.stringify(sortObj));
+    
+    // Record.find returns either an array or a QueryBuilder
+    let queryResult = Record.find(query);
+    let records;
+    
+    if (Array.isArray(queryResult)) {
+      records = queryResult;
+    } else if (queryResult && typeof queryResult.sort === 'function') {
+      records = queryResult.sort(sortObj);
+    } else {
+      records = await queryResult; // Try to await in case it's a Promise
+      if (Array.isArray(records)) {
+        records.sort(sortObj);
+      }
+    }
+    
+    console.log('✅ Returned', records.length, 'records to client');
     res.json({ success: true, count: records.length, records });
   } catch (err) {
+    console.error('❌ Error fetching records:', err.message, err.stack);
     next(err);
   }
 });
