@@ -95,8 +95,35 @@ const fallbackUsers = [
   { username: 'abinaya', password: 'abinaya@29' }
 ];
 
-// Save original findOne method
+// Fallback storage for records (when DB is not available)
+const fallbackRecords = [];
+
+// Query builder for chaining (mimics Mongoose Query)
+class QueryBuilder {
+  constructor(results) {
+    this._results = results;
+  }
+  
+  sort(sortObj) {
+    const [sortKey, sortOrder] = Object.entries(sortObj)[0];
+    this._results.sort((a, b) => {
+      const aVal = a[sortKey];
+      const bVal = b[sortKey];
+      if (aVal < bVal) return sortOrder === 1 ? -1 : 1;
+      if (aVal > bVal) return sortOrder === 1 ? 1 : -1;
+      return 0;
+    });
+    return this._results;
+  }
+}
+
+// Save original methods
 const originalUserFindOne = User.findOne.bind(User);
+const originalRecordCreate = Record.create.bind(Record);
+const originalRecordFind = Record.find.bind(Record);
+const originalRecordFindById = Record.findById.bind(Record);
+const originalRecordFindByIdAndUpdate = Record.findByIdAndUpdate.bind(Record);
+const originalRecordFindByIdAndDelete = Record.findByIdAndDelete.bind(Record);
 
 // Override findOne to support fallback when DB is down
 User.findOne = async function(query) {
@@ -123,6 +150,100 @@ User.findOne = async function(query) {
   
   console.log('🗄️  Using MongoDB for authentication');
   return originalUserFindOne(query);
+};
+
+// Override Record.create to support fallback
+Record.create = async function(data) {
+  if (!dbConnected) {
+    console.log('🔄 Using fallback storage for record creation...');
+    const id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+    const record = {
+      _id: id,
+      ...data,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    fallbackRecords.push(record);
+    console.log('✅ Record saved to fallback storage:', id);
+    return record;
+  }
+  return originalRecordCreate(data);
+};
+
+// Override Record.find to support fallback
+Record.find = function(query = {}) {
+  if (!dbConnected) {
+    console.log('🔄 Using fallback storage for record find...');
+    let results = [...fallbackRecords];
+    
+    if (query.$or) {
+      results = fallbackRecords.filter(record => {
+        return query.$or.some(condition => {
+          if (condition.name && condition.name.$regex) {
+            const regex = new RegExp(condition.name.$regex, condition.name.$options || '');
+            return regex.test(record.name);
+          }
+          if (condition.email && condition.email.$regex) {
+            const regex = new RegExp(condition.email.$regex, condition.email.$options || '');
+            return regex.test(record.email || '');
+          }
+          if (condition.phone && condition.phone.$regex) {
+            const regex = new RegExp(condition.phone.$regex, condition.phone.$options || '');
+            return regex.test(record.phone || '');
+          }
+          return false;
+        });
+      });
+    }
+    
+    return new QueryBuilder(results);
+  }
+  
+  return originalRecordFind(query);
+};
+
+// Override Record.findById to support fallback
+Record.findById = async function(id) {
+  if (!dbConnected) {
+    console.log('🔄 Using fallback storage for record findById...');
+    return fallbackRecords.find(r => r._id === id) || null;
+  }
+  return originalRecordFindById(id);
+};
+
+// Override Record.findByIdAndUpdate to support fallback
+Record.findByIdAndUpdate = async function(id, data, options = {}) {
+  if (!dbConnected) {
+    console.log('🔄 Using fallback storage for record update...');
+    const index = fallbackRecords.findIndex(r => r._id === id);
+    if (index === -1) {
+      return null;
+    }
+    fallbackRecords[index] = {
+      ...fallbackRecords[index],
+      ...data,
+      updatedAt: new Date()
+    };
+    if (options.new) {
+      return fallbackRecords[index];
+    }
+    return fallbackRecords[index];
+  }
+  return originalRecordFindByIdAndUpdate(id, data, options);
+};
+
+// Override Record.findByIdAndDelete to support fallback
+Record.findByIdAndDelete = async function(id) {
+  if (!dbConnected) {
+    console.log('🔄 Using fallback storage for record delete...');
+    const index = fallbackRecords.findIndex(r => r._id === id);
+    if (index === -1) {
+      return null;
+    }
+    const deleted = fallbackRecords.splice(index, 1);
+    return deleted[0];
+  }
+  return originalRecordFindByIdAndDelete(id);
 };
 
 // Seed a default admin user if it doesn't exist
