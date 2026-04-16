@@ -63,7 +63,7 @@ const errorHandler = (err, req, res, next) => {
     const messages = Object.values(err.errors).map(e => e.message);
     return res.status(400).json({ 
       success: false, 
-      message: 'Validation error',
+      error: 'Validation error',
       errors: messages 
     });
   }
@@ -72,14 +72,14 @@ const errorHandler = (err, req, res, next) => {
   if (err.code === 11000) {
     return res.status(400).json({ 
       success: false, 
-      message: 'Duplicate entry for ' + Object.keys(err.keyPattern)[0] 
+      error: 'Duplicate entry for ' + Object.keys(err.keyPattern)[0] 
     });
   }
 
   // Default error
   res.status(err.status || 500).json({
     success: false,
-    message: err.message || 'Internal server error'
+    error: err.message || 'Internal server error'
   });
 };
 

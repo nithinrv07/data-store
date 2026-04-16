@@ -165,7 +165,12 @@ entryForm.addEventListener('submit', async (e) => {
       entryForm.reset();
       setTimeout(() => showView('dashboard'), 1500);
     } else {
-      msg.textContent = "Failed to save: " + (data.error || JSON.stringify(data.errors));
+      // Handle different error formats
+      let errorMsg = data.error || 'Unknown error';
+      if (data.errors && Array.isArray(data.errors)) {
+        errorMsg = data.errors.join(', ');
+      }
+      msg.textContent = "Failed to save: " + errorMsg;
       msg.className = 'error-text';
     }
   } catch (error) {
