@@ -399,10 +399,15 @@ if (btnDeleteRecord) {
       const recordId = currentActiveRecordId;
       console.log('📤 Sending DELETE request for:', recordId);
       
-      const res = await fetch(`/api/records/${recordId}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' }
+      const res = await apiCall(`/api/records/${recordId}`, {
+        method: 'DELETE'
       });
+      
+      if (!res) {
+        console.log('❌ No response from API');
+        alert('Failed to delete record: No response from server');
+        return;
+      }
       
       console.log('Response status:', res.status);
       const data = await res.json();
