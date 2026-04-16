@@ -50,47 +50,47 @@
       <!-- DATA ENTRY VIEW -->
       <section id="entry-view" class="view hidden">
         <div class="card glass-effect">
-          <h2>Enter New Record / புதிய பதிவை உள்ளிடவும்</h2>
+          <h2>Enter New Record</h2>
           <form id="entry-form">
             <div class="input-row">
               <div class="input-group">
-                <label for="entry-name">Full Name / முழு பெயர்</label>
+                <label for="entry-name">Full Name</label>
                 <input type="text" id="entry-name" required>
               </div>
               <div class="input-group">
-                <label for="entry-dob">Date of Birth / பிறந்த தேதி</label>
+                <label for="entry-dob">Date of Birth</label>
                 <input type="date" id="entry-dob" required>
               </div>
             </div>
             
             <div class="input-group">
-              <label for="entry-address">Address / முகவரி</label>
+              <label for="entry-address">Address</label>
               <textarea id="entry-address" rows="3" required></textarea>
             </div>
 
             <div class="input-row">
               <div class="input-group">
-                <label for="entry-email">Email (Optional) / மின்னஞ்சல் (விரும்பினால்)</label>
+                <label for="entry-email">Email (Optional)</label>
                 <input type="email" id="entry-email">
               </div>
               <div class="input-group">
-                <label for="entry-phone">Phone (Optional) / தொலைபேசி (விரும்பினால்)</label>
+                <label for="entry-phone">Phone (Optional)</label>
                 <input type="tel" id="entry-phone">
               </div>
             </div>
 
             <p id="entry-msg" class="success-text"></p>
-            <button type="submit" class="btn primary-btn">Save Record / பதிவை சேமிக்கவும்</button>
+            <button type="submit" class="btn primary-btn">Save Record</button>
           </form>
         </div>
       </section>
 
       <!-- DASHBOARD VIEW -->
       <section id="dashboard-view" class="view hidden">
-        <h2 class="section-title">All Records / அனைத்து பதிவுகள்</h2>
+        <h2 class="section-title">All Records</h2>
         <div class="search-bar">
-          <input type="text" id="search-input" placeholder="Search by name, email, or phone... / பெயர், மின்னஞ்சல் அல்லது தொலைபேசி மூலம் தேடவும்..." class="search-input">
-          <button id="search-btn" class="btn primary-btn">Search / தேடு</button>
+          <input type="text" id="search-input" placeholder="Search by name, email, or phone..." class="search-input">
+          <button id="search-btn" class="btn primary-btn">Search</button>
         </div>
         <div class="records-grid" id="records-grid">
           <!-- Dynamically populated -->
@@ -110,9 +110,9 @@
         <!-- populated dynamically -->
       </div>
       <div class="modal-actions">
-        <button id="btn-export-excel" class="btn success-btn">Export Excel / எக்செல் ஐ ஏற்றுமதி செய்க</button>
-        <button id="btn-export-word" class="btn alt-btn">Export to Word (Tamil) / Word க்கு ஏற்றுமதி செய்க (தமிழ்)</button>
-        <button id="btn-delete-record" class="btn danger-btn">Delete Record / பதிவை நீக்கவும்</button>
+        <button id="btn-export-excel" class="btn success-btn">Export Excel</button>
+        <button id="btn-export-word" class="btn alt-btn">Export to Word (Tamil)</button>
+        <button id="btn-delete-record" class="btn danger-btn">Delete Record</button>
       </div>
     </div>
   </div>

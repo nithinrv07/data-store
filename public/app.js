@@ -270,19 +270,19 @@ function openModal(record) {
   
   modalBody.innerHTML = `
     <div class="data-row">
-      <div class="data-label">Date of Birth / பிறந்த தேதி</div>
+      <div class="data-label">Date of Birth</div>
       <div class="data-value">${record.dob}</div>
     </div>
     <div class="data-row">
-      <div class="data-label">Address / முகவரி</div>
+      <div class="data-label">Address</div>
       <div class="data-value">${record.address}</div>
     </div>
     <div class="data-row">
-      <div class="data-label">Email / மின்னஞ்சல்</div>
+      <div class="data-label">Email</div>
       <div class="data-value">${record.email || 'N/A'}</div>
     </div>
     <div class="data-row">
-      <div class="data-label">Phone / தொலைபேசி</div>
+      <div class="data-label">Phone</div>
       <div class="data-value">${record.phone || 'N/A'}</div>
     </div>
   `;
