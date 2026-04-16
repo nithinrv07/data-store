@@ -126,14 +126,21 @@ loginForm.addEventListener('submit', async (e) => {
   const err = document.getElementById('login-error');
   
   err.textContent = 'Logging in...';
+  console.log('📝 Login attempt:', { username: u, password: '***' });
 
   try {
+    console.log('🌐 Sending fetch to /api/login...');
     const res = await fetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: u, password: p })
     });
+    
+    console.log('📊 Response status:', res.status);
+    console.log('📋 Response headers:', res.headers);
+    
     const data = await res.json();
+    console.log('📦 Response data:', data);
     
     if (data.success && data.token) {
       tokenManager.setToken(data.token);
@@ -144,6 +151,10 @@ loginForm.addEventListener('submit', async (e) => {
       err.textContent = data.message || 'Login failed';
     }
   } catch (error) {
+    console.error('❌ Login error:', error);
+    console.error('Error type:', error.constructor.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
     err.textContent = "Server error. Could not login.";
   }
 });

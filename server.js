@@ -198,3 +198,13 @@ app.use(errorHandler);
 
 // ✅ EXPORT FOR VERCEL
 module.exports = app;
+
+// 🚀 LOCAL DEVELOPMENT
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`\n✅ Server running at http://localhost:${PORT}`);
+    console.log(`🌐 Open in browser: http://localhost:${PORT}`);
+    console.log(`📊 API Health: http://localhost:${PORT}/api/health\n`);
+  });
+}
