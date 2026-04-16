@@ -176,13 +176,107 @@ app.get('/api/export/excel/:id', async (req, res, next) => {
     if (!record) return res.status(404).json({ success: false });
 
     const workbook = new excel.Workbook();
-    const sheet = workbook.addWorksheet('Data');
+    const sheet = workbook.addWorksheet('Record Data');
 
+    // Add headers
+    sheet.addRow(['Field', 'Value']);
+    
+    // Add data rows
     sheet.addRow(['Name', record.name]);
+    sheet.addRow(['Date of Birth', record.dob]);
+    sheet.addRow(['Address', record.address]);
+    sheet.addRow(['Email', record.email || '-']);
+    sheet.addRow(['Phone', record.phone || '-']);
+
+    // Style headers
+    sheet.getRow(1).font = { bold: true };
+    sheet.columns = [
+      { width: 20 },
+      { width: 40 }
+    ];
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="record-${record._id}.xlsx"`);
     await workbook.xlsx.write(res);
     res.end();
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/api/export/word/:id', async (req, res, next) => {
+  try {
+    const record = await Record.findById(req.params.id);
+    if (!record) return res.status(404).json({ success: false });
+
+    const doc = new docx.Document({
+      sections: [{
+        properties: {},
+        children: [
+          new docx.Paragraph({
+            text: 'Record Details',
+            heading: docx.HeadingLevel.HEADING_1,
+            bold: true
+          }),
+          new docx.Paragraph({
+            text: ''
+          }),
+          new docx.Table({
+            width: { size: 100, type: docx.WidthType.PERCENTAGE },
+            rows: [
+              new docx.TableRow({
+                cells: [
+                  new docx.TableCell({
+                    children: [new docx.Paragraph({ text: 'Field', bold: true })],
+                    width: { size: 30, type: docx.WidthType.PERCENTAGE }
+                  }),
+                  new docx.TableCell({
+                    children: [new docx.Paragraph({ text: 'Value', bold: true })],
+                    width: { size: 70, type: docx.WidthType.PERCENTAGE }
+                  })
+                ]
+              }),
+              new docx.TableRow({
+                cells: [
+                  new docx.TableCell({ children: [new docx.Paragraph('Name')] }),
+                  new docx.TableCell({ children: [new docx.Paragraph(record.name)] })
+                ]
+              }),
+              new docx.TableRow({
+                cells: [
+                  new docx.TableCell({ children: [new docx.Paragraph('Date of Birth')] }),
+                  new docx.TableCell({ children: [new docx.Paragraph(record.dob)] })
+                ]
+              }),
+              new docx.TableRow({
+                cells: [
+                  new docx.TableCell({ children: [new docx.Paragraph('Address')] }),
+                  new docx.TableCell({ children: [new docx.Paragraph(record.address)] })
+                ]
+              }),
+              new docx.TableRow({
+                cells: [
+                  new docx.TableCell({ children: [new docx.Paragraph('Email')] }),
+                  new docx.TableCell({ children: [new docx.Paragraph(record.email || '-')] })
+                ]
+              }),
+              new docx.TableRow({
+                cells: [
+                  new docx.TableCell({ children: [new docx.Paragraph('Phone')] }),
+                  new docx.TableCell({ children: [new docx.Paragraph(record.phone || '-')] })
+                ]
+              })
+            ]
+          })
+        ]
+      }]
+    });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', `attachment; filename="record-${record._id}.docx"`);
+    
+    const buffer = await docx.Packer.toBuffer(doc);
+    res.send(buffer);
   } catch (err) {
     next(err);
   }
