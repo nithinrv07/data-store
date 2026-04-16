@@ -1,34 +1,3 @@
 {
-  "records": [
-    {
-      "_id": "1776341237966x5tijomqg",
-      "name": "Test Person",
-      "dob": "1990-06-15",
-      "address": "789 Test Road",
-      "email": "test@example.com",
-      "phone": "5555555555",
-      "createdAt": "2026-04-16T12:07:17.966Z",
-      "updatedAt": "2026-04-16T12:07:17.966Z"
-    },
-    {
-      "_id": "17763437879760vchkludd",
-      "name": "Abinaya Kumar",
-      "dob": "1998-03-15",
-      "address": "123 Main Street, Chennai - Updated",
-      "email": "abinaya.kumar@test.com",
-      "phone": "9876543211",
-      "createdAt": "2026-04-16T12:49:47.976Z",
-      "updatedAt": "2026-04-16T12:49:48.155Z"
-    },
-    {
-      "_id": "1776343951171gt8ti63e0",
-      "name": "Feature Test - Updated",
-      "dob": "2000-01-01",
-      "address": "999 Test Lane - Updated",
-      "email": "feature.updated@test.com",
-      "phone": "2222222222",
-      "createdAt": "2026-04-16T12:52:31.171Z",
-      "updatedAt": "2026-04-16T12:52:31.192Z"
-    }
-  ]
+  "records": []
 }

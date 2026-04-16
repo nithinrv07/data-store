@@ -139,11 +139,26 @@ let fallbackRecords = [...fallbackData.records]; // Create a copy to maintain in
 
 console.log('📊 Initializing fallback records:', fallbackRecords.length, 'records loaded');
 
+// Function to get current fallback records (always fresh from in-memory cache)
+const getFallbackRecords = () => {
+  console.log('📖 Getting fallback records from cache. Current count:', fallbackRecords.length);
+  return [...fallbackRecords]; // Return a copy
+};
+
+// Function to update fallback records both in-memory and in file
+const updateFallbackRecords = (newRecords) => {
+  console.log('💾 Updating fallback records. New count:', newRecords.length);
+  fallbackRecords = [...newRecords]; // Update in-memory cache
+  saveFallbackData({ records: [...newRecords] }); // Save to file
+};
+
 // Function to refresh fallback records from file
 const refreshFallbackRecords = () => {
   try {
+    console.log('🔄 Refreshing fallback records from file');
     const freshData = loadFallbackData();
-    fallbackRecords = [...freshData.records]; // Maintain a copy in memory
+    fallbackRecords = [...freshData.records]; // Update in-memory cache
+    console.log('✅ Refreshed from file:', fallbackRecords.length, 'records');
     return fallbackRecords;
   } catch (err) {
     console.error('❌ Error refreshing fallback records:', err);
@@ -208,8 +223,8 @@ User.findOne = async function(query) {
 // Override Record.create to support fallback
 Record.create = async function(data) {
   if (!dbConnected) {
-    console.log('🔄 Using fallback storage for record creation... refreshing data');
-    const records = refreshFallbackRecords(); // Get latest records from file
+    console.log('🔄 Using fallback storage for record creation');
+    const records = getFallbackRecords();
     const id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
     const record = {
       _id: id,
@@ -226,11 +241,8 @@ Record.create = async function(data) {
     records.push(record);
     console.log('📦 Records array now has', records.length, 'items');
     
-    // Update both the module-level reference and save to file
-    fallbackRecords = records;
-    console.log('🌍 Updated global fallbackRecords, now has', fallbackRecords.length, 'items');
-    
-    saveFallbackData({ records: [...records] }); // Save a copy
+    // Update both in-memory and file
+    updateFallbackRecords(records);
     console.log('✅ Record saved to fallback storage:', id);
     return record;
   }
@@ -240,8 +252,8 @@ Record.create = async function(data) {
 // Override Record.find to support fallback
 Record.find = function(query = {}) {
   if (!dbConnected) {
-    console.log('🔄 Using fallback storage for record find... refreshing data');
-    const records = refreshFallbackRecords();
+    console.log('🔄 Using fallback storage for record find');
+    const records = getFallbackRecords();
     console.log('📊 Total records available:', records.length);
     let results = [...records];
     
@@ -275,8 +287,8 @@ Record.find = function(query = {}) {
 // Override Record.findById to support fallback
 Record.findById = async function(id) {
   if (!dbConnected) {
-    console.log('🔍 Using fallback storage for record findById... refreshing data');
-    const records = refreshFallbackRecords();
+    console.log('🔍 Using fallback storage for record findById');
+    const records = getFallbackRecords();
     console.log('   Looking for ID:', id);
     console.log('   Available IDs:', records.map(r => r._id));
     const found = records.find(r => r._id === id);
@@ -293,8 +305,8 @@ Record.findById = async function(id) {
 // Override Record.findByIdAndUpdate to support fallback
 Record.findByIdAndUpdate = async function(id, data, options = {}) {
   if (!dbConnected) {
-    console.log('🔄 Using fallback storage for record update... refreshing data');
-    const records = refreshFallbackRecords();
+    console.log('🔄 Using fallback storage for record update');
+    const records = getFallbackRecords();
     const index = records.findIndex(r => r._id === id);
     if (index === -1) {
       console.log('❌ Record not found for update:', id);
@@ -305,8 +317,6 @@ Record.findByIdAndUpdate = async function(id, data, options = {}) {
       ...data,
       updatedAt: new Date()
     };
-    fallbackRecords = records; // Update global reference
-    saveFallbackData({ records: [...records] }); // Save a copy
     console.log('✅ Record updated:', id);
     if (options.new) {
       return records[index];
@@ -319,16 +329,15 @@ Record.findByIdAndUpdate = async function(id, data, options = {}) {
 // Override Record.findByIdAndDelete to support fallback
 Record.findByIdAndDelete = async function(id) {
   if (!dbConnected) {
-    console.log('🔄 Using fallback storage for record delete... refreshing data');
-    const records = refreshFallbackRecords();
+    console.log('🔄 Using fallback storage for record delete');
+    const records = getFallbackRecords();
     const index = records.findIndex(r => r._id === id);
     if (index === -1) {
       console.log('❌ Record not found for delete:', id);
       return null;
     }
     const deleted = records.splice(index, 1);
-    fallbackRecords = records; // Update global reference
-    saveFallbackData({ records: [...records] }); // Save a copy
+    updateFallbackRecords(records);
     console.log('✅ Record deleted:', id);
     return deleted[0];
   }
