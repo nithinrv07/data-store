@@ -9,6 +9,7 @@ let dbConnected = false;
 
 // Fallback storage file
 const FALLBACK_DATA_FILE = path.join(__dirname, 'fallback_data.json');
+console.log('📄 Fallback data file path:', FALLBACK_DATA_FILE);
 
 // Load fallback data from file
 const loadFallbackData = () => {
@@ -30,10 +31,15 @@ const loadFallbackData = () => {
 // Save fallback data to file
 const saveFallbackData = (data) => {
   try {
+    console.log('💾 Attempting to save fallback data...');
+    console.log('   File path:', FALLBACK_DATA_FILE);
+    console.log('   Records to save:', data.records.length);
     fs.writeFileSync(FALLBACK_DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
-    console.log('💾 Saved fallback data to file:', FALLBACK_DATA_FILE, 'Records:', data.records.length);
+    console.log('✅ Successfully saved fallback data to:', FALLBACK_DATA_FILE);
+    console.log('   Total records saved:', data.records.length);
   } catch (err) {
     console.error('❌ Error saving fallback data:', err.message);
+    console.error('   Stack:', err.stack);
   }
 };
 
@@ -206,8 +212,18 @@ Record.create = async function(data) {
       createdAt: new Date(),
       updatedAt: new Date()
     };
+    console.log('📝 New record object:', JSON.stringify({
+      _id: record._id,
+      name: record.name,
+      dob: record.dob
+    }));
+    
     records.push(record);
+    console.log('📦 Records array now has', records.length, 'items');
+    
     fallbackRecords = records; // Update global reference
+    console.log('🌍 Updated global fallbackRecords, now has', fallbackRecords.length, 'items');
+    
     saveFallbackData({ records });
     console.log('✅ Record saved to fallback storage:', id);
     return record;

@@ -160,10 +160,15 @@ entryForm.addEventListener('submit', async (e) => {
 
     const data = await res.json();
     if (data.success) {
+      console.log('✅ Record saved successfully:', data.record);
       msg.textContent = "Record saved successfully!";
       msg.className = 'success-text';
       entryForm.reset();
-      setTimeout(() => showView('dashboard'), 1500);
+      console.log('⏱️ Waiting 1.5s before switching to dashboard...');
+      setTimeout(() => {
+        console.log('🔄 Switching to dashboard...');
+        showView('dashboard');
+      }, 1500);
     } else {
       // Handle different error formats
       let errorMsg = data.error || 'Unknown error';
@@ -181,16 +186,24 @@ entryForm.addEventListener('submit', async (e) => {
 
 // ==================== FETCH & DISPLAY RECORDS ====================
 async function fetchRecords() {
+  console.log('📥 fetchRecords() called');
   recordsGrid.innerHTML = '<p>Loading records...</p>';
   try {
     const res = await apiCall('/api/records');
     
-    if (!res) return;
+    if (!res) {
+      console.log('❌ No response from API');
+      return;
+    }
 
     const data = await res.json();
+    console.log('✅ Received data:', JSON.stringify(data, null, 2));
+    
     const records = data.records || [];
     allRecords = records;
 
+    console.log('📊 Displaying', records.length, 'records');
+    
     if (records.length === 0) {
       recordsGrid.innerHTML = '<p style="color:var(--text-sub)">No records found. Click "Add New" to create one.</p>';
       return;
@@ -198,7 +211,8 @@ async function fetchRecords() {
 
     displayRecords(records);
   } catch (e) {
-    recordsGrid.innerHTML = '<p class="error-text">Failed to fetch records.</p>';
+    console.error('❌ Error fetching records:', e);
+    recordsGrid.innerHTML = '<p class="error-text">Failed to fetch records: ' + e.message + '</p>';
   }
 }
 
