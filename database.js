@@ -135,15 +135,20 @@ const fallbackUsers = [
 
 // Fallback storage for records (when DB is not available)
 const fallbackData = loadFallbackData();
-let fallbackRecords = fallbackData.records;
+let fallbackRecords = [...fallbackData.records]; // Create a copy to maintain in memory
 
 console.log('📊 Initializing fallback records:', fallbackRecords.length, 'records loaded');
 
 // Function to refresh fallback records from file
 const refreshFallbackRecords = () => {
-  const freshData = loadFallbackData();
-  fallbackRecords = freshData.records;
-  return fallbackRecords;
+  try {
+    const freshData = loadFallbackData();
+    fallbackRecords = [...freshData.records]; // Maintain a copy in memory
+    return fallbackRecords;
+  } catch (err) {
+    console.error('❌ Error refreshing fallback records:', err);
+    return fallbackRecords; // Return last known state
+  }
 };
 
 // Query builder for chaining (mimics Mongoose Query)
@@ -204,7 +209,7 @@ User.findOne = async function(query) {
 Record.create = async function(data) {
   if (!dbConnected) {
     console.log('🔄 Using fallback storage for record creation... refreshing data');
-    const records = refreshFallbackRecords();
+    const records = refreshFallbackRecords(); // Get latest records from file
     const id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
     const record = {
       _id: id,
@@ -221,10 +226,11 @@ Record.create = async function(data) {
     records.push(record);
     console.log('📦 Records array now has', records.length, 'items');
     
-    fallbackRecords = records; // Update global reference
+    // Update both the module-level reference and save to file
+    fallbackRecords = records;
     console.log('🌍 Updated global fallbackRecords, now has', fallbackRecords.length, 'items');
     
-    saveFallbackData({ records });
+    saveFallbackData({ records: [...records] }); // Save a copy
     console.log('✅ Record saved to fallback storage:', id);
     return record;
   }
@@ -300,7 +306,7 @@ Record.findByIdAndUpdate = async function(id, data, options = {}) {
       updatedAt: new Date()
     };
     fallbackRecords = records; // Update global reference
-    saveFallbackData({ records });
+    saveFallbackData({ records: [...records] }); // Save a copy
     console.log('✅ Record updated:', id);
     if (options.new) {
       return records[index];
@@ -322,7 +328,7 @@ Record.findByIdAndDelete = async function(id) {
     }
     const deleted = records.splice(index, 1);
     fallbackRecords = records; // Update global reference
-    saveFallbackData({ records });
+    saveFallbackData({ records: [...records] }); // Save a copy
     console.log('✅ Record deleted:', id);
     return deleted[0];
   }

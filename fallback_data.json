@@ -1,3 +1,14 @@
 {
-  "records": []
+  "records": [
+    {
+      "_id": "1776341237966x5tijomqg",
+      "name": "Test Person",
+      "dob": "1990-06-15",
+      "address": "789 Test Road",
+      "email": "test@example.com",
+      "phone": "5555555555",
+      "createdAt": "2026-04-16T12:07:17.966Z",
+      "updatedAt": "2026-04-16T12:07:17.966Z"
+    }
+  ]
 }
