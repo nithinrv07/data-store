@@ -252,30 +252,36 @@ app.get('/api/export/word/:id', async (req, res, next) => {
     const doc = new docx.Document({
       sections: [{
         children: [
+          // English & Tamil Title
           new docx.Paragraph({
-            text: 'Record Details',
+            text: 'Record Details | பதிவு விவரங்கள்',
             heading: docx.HeadingLevel.HEADING_1,
             bold: true,
             spacing: { after: 400 }
           }),
+          // Name
           new docx.Paragraph({
-            text: `Name: ${record.name}`,
+            text: `Name / பெயர்: ${record.name}`,
             spacing: { after: 200 }
           }),
+          // Date of Birth
           new docx.Paragraph({
-            text: `Date of Birth: ${record.dob}`,
+            text: `Date of Birth / பிறந்த தேதி: ${record.dob}`,
             spacing: { after: 200 }
           }),
+          // Address
           new docx.Paragraph({
-            text: `Address: ${record.address}`,
+            text: `Address / முகவரி: ${record.address}`,
             spacing: { after: 200 }
           }),
+          // Email
           new docx.Paragraph({
-            text: `Email: ${record.email || 'N/A'}`,
+            text: `Email / மின்னஞ்சல்: ${record.email || 'N/A'}`,
             spacing: { after: 200 }
           }),
+          // Phone
           new docx.Paragraph({
-            text: `Phone: ${record.phone || 'N/A'}`,
+            text: `Phone / தொலைபேசி: ${record.phone || 'N/A'}`,
             spacing: { after: 400 }
           })
         ]

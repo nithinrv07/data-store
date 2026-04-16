@@ -86,6 +86,7 @@ const modalName = document.getElementById('modal-name');
 const modalBody = document.getElementById('modal-body');
 const btnExcel = document.getElementById('btn-export-excel');
 const btnWord = document.getElementById('btn-export-word');
+const btnDeleteRecord = document.getElementById('btn-delete-record');
 
 let currentActiveRecordId = null;
 let allRecords = [];
@@ -268,10 +269,22 @@ function openModal(record) {
   modalName.textContent = record.name;
   
   modalBody.innerHTML = `
-    <div class="data-row"><div class="data-label">Date of Birth</div><div class="data-value">${record.dob}</div></div>
-    <div class="data-row"><div class="data-label">Address</div><div class="data-value">${record.address}</div></div>
-    <div class="data-row"><div class="data-label">Email</div><div class="data-value">${record.email || 'N/A'}</div></div>
-    <div class="data-row"><div class="data-label">Phone</div><div class="data-value">${record.phone || 'N/A'}</div></div>
+    <div class="data-row">
+      <div class="data-label">Date of Birth / பிறந்த தேதி</div>
+      <div class="data-value">${record.dob}</div>
+    </div>
+    <div class="data-row">
+      <div class="data-label">Address / முகவரி</div>
+      <div class="data-value">${record.address}</div>
+    </div>
+    <div class="data-row">
+      <div class="data-label">Email / மின்னஞ்சல்</div>
+      <div class="data-value">${record.email || 'N/A'}</div>
+    </div>
+    <div class="data-row">
+      <div class="data-label">Phone / தொலைபேசி</div>
+      <div class="data-value">${record.phone || 'N/A'}</div>
+    </div>
   `;
   
   detailsModal.classList.remove('hidden');
@@ -367,33 +380,52 @@ btnWord.addEventListener('click', async () => {
 });
 
 // ==================== DELETE ====================
-const btnDeleteRecord = document.getElementById('btn-delete-record');
-btnDeleteRecord.addEventListener('click', async () => {
-  if (!currentActiveRecordId) return;
-  
-  if (!confirm('Are you sure you want to delete this record? This action cannot be undone.')) {
-    return;
-  }
-  
-  try {
-    const token = tokenManager.getToken();
-    const res = await fetch(`/api/records/${currentActiveRecordId}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    
-    const data = await res.json();
-    if (data.success) {
-      detailsModal.classList.add('hidden');
-      currentActiveRecordId = null;
-      fetchRecords();
-    } else {
-      alert('Failed to delete record');
+if (btnDeleteRecord) {
+  btnDeleteRecord.addEventListener('click', async () => {
+    if (!currentActiveRecordId) {
+      console.log('❌ No record selected to delete');
+      alert('No record selected');
+      return;
     }
-  } catch (err) {
-    alert('Error deleting record');
-  }
-});
+    
+    console.log('🗑️ Attempting to delete record:', currentActiveRecordId);
+    
+    if (!confirm('Are you sure you want to delete this record? This action cannot be undone.')) {
+      console.log('❌ Delete cancelled by user');
+      return;
+    }
+    
+    try {
+      const recordId = currentActiveRecordId;
+      console.log('📤 Sending DELETE request for:', recordId);
+      
+      const res = await fetch(`/api/records/${recordId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      console.log('Response status:', res.status);
+      const data = await res.json();
+      console.log('Response data:', data);
+      
+      if (data.success) {
+        console.log('✅ Record deleted successfully:', recordId);
+        detailsModal.classList.add('hidden');
+        currentActiveRecordId = null;
+        await fetchRecords();
+        alert('Record deleted successfully');
+      } else {
+        console.log('❌ Delete failed:', data.message);
+        alert('Failed to delete record: ' + (data.message || 'Unknown error'));
+      }
+    } catch (err) {
+      console.error('❌ Error deleting record:', err);
+      alert('Error deleting record: ' + err.message);
+    }
+  });
+} else {
+  console.error('❌ Delete button not found in HTML');
+}
 
 // ==================== INITIALIZE ====================
 // Skip login - go directly to dashboard
