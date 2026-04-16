@@ -44,6 +44,7 @@ body {
 .w-100 { width: 100%; }
 .gradient-text {
   background: linear-gradient(to right, var(--primary), var(--accent));
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -130,8 +131,7 @@ body {
 .toggle-btn:hover {
   color: var(--primary);
 }
-  width: 100%;
-}
+
 .input-row {
   display: flex;
   gap: 20px;

@@ -417,7 +417,7 @@ if (exportAllBtn) {
     } catch (err) {
       console.error('❌ Export error:', err);
       alert('Failed to export records: ' + err.message);
-      exportAllBtn.textContent = '📊 Export All';
+      exportAllBtn.textContent = ' Export All';
       exportAllBtn.disabled = false;
     }
   });
