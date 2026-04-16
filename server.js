@@ -75,7 +75,7 @@ app.post('/api/login', authLimiter, async (req, res, next) => {
 });
 
 // ==================== RECORDS ====================
-app.post('/api/records', authMiddleware, async (req, res, next) => {
+app.post('/api/records', async (req, res, next) => {
   try {
     const validationError = validateRecord(req.body);
     if (validationError) {
@@ -91,7 +91,7 @@ app.post('/api/records', authMiddleware, async (req, res, next) => {
   }
 });
 
-app.get('/api/records', authMiddleware, async (req, res, next) => {
+app.get('/api/records', async (req, res, next) => {
   try {
     const { search, sortBy = 'createdAt', order = 'desc' } = req.query;
 
@@ -117,7 +117,7 @@ app.get('/api/records', authMiddleware, async (req, res, next) => {
   }
 });
 
-app.get('/api/records/:id', authMiddleware, async (req, res, next) => {
+app.get('/api/records/:id', async (req, res, next) => {
   try {
     const record = await Record.findById(req.params.id);
     if (!record) {
@@ -129,7 +129,7 @@ app.get('/api/records/:id', authMiddleware, async (req, res, next) => {
   }
 });
 
-app.put('/api/records/:id', authMiddleware, async (req, res, next) => {
+app.put('/api/records/:id', async (req, res, next) => {
   try {
     const validationError = validateRecord(req.body);
     if (validationError) {
@@ -155,7 +155,7 @@ app.put('/api/records/:id', authMiddleware, async (req, res, next) => {
   }
 });
 
-app.delete('/api/records/:id', authMiddleware, async (req, res, next) => {
+app.delete('/api/records/:id', async (req, res, next) => {
   try {
     const record = await Record.findByIdAndDelete(req.params.id);
 
@@ -170,7 +170,7 @@ app.delete('/api/records/:id', authMiddleware, async (req, res, next) => {
 });
 
 // ==================== EXPORT ====================
-app.get('/api/export/excel/:id', authMiddleware, async (req, res, next) => {
+app.get('/api/export/excel/:id', async (req, res, next) => {
   try {
     const record = await Record.findById(req.params.id);
     if (!record) return res.status(404).json({ success: false });
