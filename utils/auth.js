@@ -25,24 +25,22 @@ const verifyToken = (token) => {
 };
 
 /**
- * Middleware to verify authentication
+ * Middleware to verify authentication (optional - continues without token)
  */
 const authMiddleware = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1]; // Bearer <token>
 
   if (!token) {
-    return res.status(401).json({ 
-      success: false, 
-      message: 'No authentication token provided' 
-    });
+    // No token provided - continue anyway (auth is optional)
+    req.user = { username: 'guest', userId: 'guest' };
+    return next();
   }
 
   const decoded = verifyToken(token);
   if (!decoded) {
-    return res.status(401).json({ 
-      success: false, 
-      message: 'Invalid or expired token' 
-    });
+    // Invalid token - continue anyway
+    req.user = { username: 'guest', userId: 'guest' };
+    return next();
   }
 
   req.user = decoded;

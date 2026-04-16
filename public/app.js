@@ -41,10 +41,9 @@ async function apiCall(endpoint, options = {}) {
   const config = { ...defaultOptions, ...options };
   const res = await fetch(endpoint, config);
 
-  // If 401, token expired - redirect to login
+  // If 401, token expired - continue anyway (no login required)
   if (res.status === 401) {
     tokenManager.clearToken();
-    showView('login');
     return null;
   }
 
@@ -119,50 +118,18 @@ function showView(viewName) {
 }
 
 // ==================== AUTHENTICATION ====================
-loginForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const u = document.getElementById('username').value;
-  const p = document.getElementById('password').value;
-  const err = document.getElementById('login-error');
-  
-  err.textContent = 'Logging in...';
-  console.log('📝 Login attempt:', { username: u, password: '***' });
+// Login disabled - no authentication required
+// (Login form removed - direct access to dashboard)
 
-  try {
-    console.log('🌐 Sending fetch to /api/login...');
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: u, password: p })
-    });
-    
-    console.log('📊 Response status:', res.status);
-    console.log('📋 Response headers:', res.headers);
-    
-    const data = await res.json();
-    console.log('📦 Response data:', data);
-    
-    if (data.success && data.token) {
-      tokenManager.setToken(data.token);
-      err.textContent = '';
-      loginForm.reset();
-      showView('dashboard');
-    } else {
-      err.textContent = data.message || 'Login failed';
-    }
-  } catch (error) {
-    console.error('❌ Login error:', error);
-    console.error('Error type:', error.constructor.name);
-    console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
-    err.textContent = "Server error. Could not login.";
-  }
-});
-
-navLogout.addEventListener('click', () => {
-  tokenManager.clearToken();
-  showView('login');
-});
+// Logout handler - reset and stay on dashboard
+if (navLogout) {
+  navLogout.addEventListener('click', () => {
+    tokenManager.clearToken();
+    allRecords = [];
+    recordsGrid.innerHTML = '';
+    showView('dashboard');
+  });
+}
 
 // ==================== NAVIGATION ====================
 navDashboard.addEventListener('click', () => showView('dashboard'));
@@ -339,9 +306,5 @@ btnWord.addEventListener('click', () => {
 });
 
 // ==================== INITIALIZE ====================
-// Check if user is already logged in
-if (tokenManager.hasToken()) {
-  showView('dashboard');
-} else {
-  showView('login');
-}
+// Skip login - go directly to dashboard
+showView('dashboard');
