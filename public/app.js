@@ -1,4 +1,57 @@
-// DOM Elements
+// ==================== TOKEN MANAGEMENT ====================
+class TokenManager {
+  constructor() {
+    this.tokenKey = 'auth_token';
+  }
+
+  setToken(token) {
+    localStorage.setItem(this.tokenKey, token);
+  }
+
+  getToken() {
+    return localStorage.getItem(this.tokenKey);
+  }
+
+  clearToken() {
+    localStorage.removeItem(this.tokenKey);
+  }
+
+  hasToken() {
+    return !!this.getToken();
+  }
+
+  getAuthHeader() {
+    const token = this.getToken();
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+  }
+}
+
+const tokenManager = new TokenManager();
+
+// ==================== API HELPER ====================
+async function apiCall(endpoint, options = {}) {
+  const defaultOptions = {
+    headers: {
+      'Content-Type': 'application/json',
+      ...tokenManager.getAuthHeader(),
+      ...options.headers
+    }
+  };
+
+  const config = { ...defaultOptions, ...options };
+  const res = await fetch(endpoint, config);
+
+  // If 401, token expired - redirect to login
+  if (res.status === 401) {
+    tokenManager.clearToken();
+    showView('login');
+    return null;
+  }
+
+  return res;
+}
+
+// ==================== DOM ELEMENTS ====================
 const loginView = document.getElementById('login-view');
 const mainShell = document.getElementById('main-app-shell');
 const entryView = document.getElementById('entry-view');
@@ -38,7 +91,7 @@ const btnWord = document.getElementById('btn-export-word');
 let currentActiveRecordId = null;
 let allRecords = [];
 
-// Routing logic
+// ==================== ROUTING ====================
 function showView(viewName) {
   // Hide all
   loginView.classList.add('hidden');
@@ -65,13 +118,15 @@ function showView(viewName) {
   }
 }
 
-// Authentication Flow
+// ==================== AUTHENTICATION ====================
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const u = document.getElementById('username').value;
   const p = document.getElementById('password').value;
   const err = document.getElementById('login-error');
   
+  err.textContent = 'Logging in...';
+
   try {
     const res = await fetch('/api/login', {
       method: 'POST',
@@ -79,10 +134,14 @@ loginForm.addEventListener('submit', async (e) => {
       body: JSON.stringify({ username: u, password: p })
     });
     const data = await res.json();
-    if(data.success) {
+    
+    if (data.success && data.token) {
+      tokenManager.setToken(data.token);
+      err.textContent = '';
+      loginForm.reset();
       showView('dashboard');
     } else {
-      err.textContent = data.message;
+      err.textContent = data.message || 'Login failed';
     }
   } catch (error) {
     err.textContent = "Server error. Could not login.";
@@ -90,15 +149,15 @@ loginForm.addEventListener('submit', async (e) => {
 });
 
 navLogout.addEventListener('click', () => {
-    // In a real app we'd clear tokens, but here we just hide UI
-    showView('login');
+  tokenManager.clearToken();
+  showView('login');
 });
 
-// Navigation Handling
+// ==================== NAVIGATION ====================
 navDashboard.addEventListener('click', () => showView('dashboard'));
 navAdd.addEventListener('click', () => showView('entry'));
 
-// Data Entry Flow
+// ==================== DATA ENTRY ====================
 entryForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const payload = {
@@ -114,19 +173,21 @@ entryForm.addEventListener('submit', async (e) => {
   msg.textContent = 'Saving...';
 
   try {
-    const res = await fetch('/api/records', {
+    const res = await apiCall('/api/records', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
+
+    if (!res) return;
+
     const data = await res.json();
-    if(data.success) {
+    if (data.success) {
       msg.textContent = "Record saved successfully!";
       msg.className = 'success-text';
       entryForm.reset();
       setTimeout(() => showView('dashboard'), 1500);
     } else {
-      msg.textContent = "Failed to save: " + data.error;
+      msg.textContent = "Failed to save: " + (data.error || JSON.stringify(data.errors));
       msg.className = 'error-text';
     }
   } catch (error) {
@@ -135,21 +196,24 @@ entryForm.addEventListener('submit', async (e) => {
   }
 });
 
-// Fetch & Display Records
+// ==================== FETCH & DISPLAY RECORDS ====================
 async function fetchRecords() {
   recordsGrid.innerHTML = '<p>Loading records...</p>';
   try {
-    const res = await fetch('/api/records');
-    const records = await res.json();
+    const res = await apiCall('/api/records');
+    
+    if (!res) return;
+
+    const data = await res.json();
+    const records = data.records || [];
     allRecords = records;
 
-    if(records.length === 0) {
+    if (records.length === 0) {
       recordsGrid.innerHTML = '<p style="color:var(--text-sub)">No records found. Click "Add New" to create one.</p>';
       return;
     }
 
     displayRecords(records);
-
   } catch (e) {
     recordsGrid.innerHTML = '<p class="error-text">Failed to fetch records.</p>';
   }
@@ -158,7 +222,7 @@ async function fetchRecords() {
 // Display records in grid
 function displayRecords(records) {
   recordsGrid.innerHTML = '';
-  if(records.length === 0) {
+  if (records.length === 0) {
     recordsGrid.innerHTML = '<p style="color:var(--text-sub)">No records found.</p>';
     return;
   }
@@ -179,10 +243,10 @@ function displayRecords(records) {
   });
 }
 
-// Search functionality
+// ==================== SEARCH ====================
 searchBtn.addEventListener('click', () => {
   const query = searchInput.value.toLowerCase().trim();
-  if(query === '') {
+  if (query === '') {
     displayRecords(allRecords);
     return;
   }
@@ -195,14 +259,13 @@ searchBtn.addEventListener('click', () => {
   displayRecords(filtered);
 });
 
-// Search on Enter key
 searchInput.addEventListener('keypress', (e) => {
-  if(e.key === 'Enter') {
+  if (e.key === 'Enter') {
     searchBtn.click();
   }
 });
 
-// Modal Logic
+// ==================== MODAL ====================
 function openModal(record) {
   currentActiveRecordId = record._id;
   modalName.textContent = record.name;
@@ -222,21 +285,52 @@ closeModalBtn.addEventListener('click', () => {
   currentActiveRecordId = null;
 });
 
-// Close modal when clicking on overlay background
 detailsModal.addEventListener('click', (e) => {
-  if (e.target === detailsModal) detailsModal.classList.add('hidden');
+  if (e.target === detailsModal) {
+    detailsModal.classList.add('hidden');
+    currentActiveRecordId = null;
+  }
 });
 
-// Export Logic
+// ==================== EXPORT ====================
 btnExcel.addEventListener('click', () => {
-  if(!currentActiveRecordId) return;
-  window.location.href = `/api/export/excel/${currentActiveRecordId}`;
+  if (!currentActiveRecordId) return;
+  const token = tokenManager.getToken();
+  const url = `/api/export/excel/${currentActiveRecordId}`;
+  
+  fetch(url, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  }).then(res => res.blob()).then(blob => {
+    const blobUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = 'export.xlsx';
+    link.click();
+    window.URL.revokeObjectURL(blobUrl);
+  });
 });
 
 btnWord.addEventListener('click', () => {
-  if(!currentActiveRecordId) return;
-  window.location.href = `/api/export/word/${currentActiveRecordId}`;
+  if (!currentActiveRecordId) return;
+  const token = tokenManager.getToken();
+  const url = `/api/export/word/${currentActiveRecordId}`;
+  
+  fetch(url, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  }).then(res => res.blob()).then(blob => {
+    const blobUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = 'export.docx';
+    link.click();
+    window.URL.revokeObjectURL(blobUrl);
+  });
 });
 
-// Initialize
-showView('login');
+// ==================== INITIALIZE ====================
+// Check if user is already logged in
+if (tokenManager.hasToken()) {
+  showView('dashboard');
+} else {
+  showView('login');
+}
