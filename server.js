@@ -173,7 +173,7 @@ app.delete('/api/records/:id', async (req, res, next) => {
 app.get('/api/export/excel/:id', async (req, res, next) => {
   try {
     const record = await Record.findById(req.params.id);
-    if (!record) return res.status(404).json({ success: false });
+    if (!record) return res.status(404).json({ success: false, message: 'Record not found' });
 
     const workbook = new excel.Workbook();
     const sheet = workbook.addWorksheet('Record Data');
@@ -197,9 +197,11 @@ app.get('/api/export/excel/:id', async (req, res, next) => {
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="record-${record._id}.xlsx"`);
+    console.log('✅ Exporting to Excel:', record._id);
     await workbook.xlsx.write(res);
     res.end();
   } catch (err) {
+    console.error('❌ Excel export error:', err.message);
     next(err);
   }
 });
@@ -207,62 +209,36 @@ app.get('/api/export/excel/:id', async (req, res, next) => {
 app.get('/api/export/word/:id', async (req, res, next) => {
   try {
     const record = await Record.findById(req.params.id);
-    if (!record) return res.status(404).json({ success: false });
+    if (!record) return res.status(404).json({ success: false, message: 'Record not found' });
 
     const doc = new docx.Document({
       sections: [{
-        properties: {},
         children: [
           new docx.Paragraph({
             text: 'Record Details',
             heading: docx.HeadingLevel.HEADING_1,
             bold: true,
+            spacing: { after: 400 }
+          }),
+          new docx.Paragraph({
+            text: `Name: ${record.name}`,
             spacing: { after: 200 }
           }),
-          new docx.Table({
-            width: { size: 100, type: docx.WidthType.PERCENTAGE },
-            rows: [
-              new docx.TableRow({
-                cells: [
-                  new docx.TableCell({
-                    children: [new docx.Paragraph({ text: 'Field', bold: true })],
-                  }),
-                  new docx.TableCell({
-                    children: [new docx.Paragraph({ text: 'Value', bold: true })],
-                  })
-                ]
-              }),
-              new docx.TableRow({
-                cells: [
-                  new docx.TableCell({ children: [new docx.Paragraph('Name')] }),
-                  new docx.TableCell({ children: [new docx.Paragraph(String(record.name))] })
-                ]
-              }),
-              new docx.TableRow({
-                cells: [
-                  new docx.TableCell({ children: [new docx.Paragraph('Date of Birth')] }),
-                  new docx.TableCell({ children: [new docx.Paragraph(String(record.dob))] })
-                ]
-              }),
-              new docx.TableRow({
-                cells: [
-                  new docx.TableCell({ children: [new docx.Paragraph('Address')] }),
-                  new docx.TableCell({ children: [new docx.Paragraph(String(record.address))] })
-                ]
-              }),
-              new docx.TableRow({
-                cells: [
-                  new docx.TableCell({ children: [new docx.Paragraph('Email')] }),
-                  new docx.TableCell({ children: [new docx.Paragraph(String(record.email || '-'))] })
-                ]
-              }),
-              new docx.TableRow({
-                cells: [
-                  new docx.TableCell({ children: [new docx.Paragraph('Phone')] }),
-                  new docx.TableCell({ children: [new docx.Paragraph(String(record.phone || '-'))] })
-                ]
-              })
-            ]
+          new docx.Paragraph({
+            text: `Date of Birth: ${record.dob}`,
+            spacing: { after: 200 }
+          }),
+          new docx.Paragraph({
+            text: `Address: ${record.address}`,
+            spacing: { after: 200 }
+          }),
+          new docx.Paragraph({
+            text: `Email: ${record.email || 'N/A'}`,
+            spacing: { after: 200 }
+          }),
+          new docx.Paragraph({
+            text: `Phone: ${record.phone || 'N/A'}`,
+            spacing: { after: 400 }
           })
         ]
       }]
@@ -271,8 +247,11 @@ app.get('/api/export/word/:id', async (req, res, next) => {
     const buffer = await docx.Packer.toBuffer(doc);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
     res.setHeader('Content-Disposition', `attachment; filename="record-${record._id}.docx"`);
+    res.setHeader('Content-Length', buffer.length);
+    console.log('✅ Exporting to Word:', record._id, 'Size:', buffer.length);
     res.send(buffer);
   } catch (err) {
+    console.error('❌ Word export error:', err.message);
     next(err);
   }
 });

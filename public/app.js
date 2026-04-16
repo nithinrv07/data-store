@@ -276,38 +276,60 @@ detailsModal.addEventListener('click', (e) => {
 });
 
 // ==================== EXPORT ====================
-btnExcel.addEventListener('click', () => {
+btnExcel.addEventListener('click', async () => {
   if (!currentActiveRecordId) return;
-  const token = tokenManager.getToken();
-  const url = `/api/export/excel/${currentActiveRecordId}`;
   
-  fetch(url, {
-    headers: { 'Authorization': `Bearer ${token}` }
-  }).then(res => res.blob()).then(blob => {
+  try {
+    const token = tokenManager.getToken();
+    const url = `/api/export/excel/${currentActiveRecordId}`;
+    
+    const res = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (!res.ok) {
+      throw new Error(`Export failed with status ${res.status}`);
+    }
+    
+    const blob = await res.blob();
     const blobUrl = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = blobUrl;
-    link.download = 'export.xlsx';
+    link.download = `record-${currentActiveRecordId}.xlsx`;
     link.click();
     window.URL.revokeObjectURL(blobUrl);
-  });
+  } catch (err) {
+    console.error('Excel export error:', err);
+    alert('Failed to export to Excel: ' + err.message);
+  }
 });
 
-btnWord.addEventListener('click', () => {
+btnWord.addEventListener('click', async () => {
   if (!currentActiveRecordId) return;
-  const token = tokenManager.getToken();
-  const url = `/api/export/word/${currentActiveRecordId}`;
   
-  fetch(url, {
-    headers: { 'Authorization': `Bearer ${token}` }
-  }).then(res => res.blob()).then(blob => {
+  try {
+    const token = tokenManager.getToken();
+    const url = `/api/export/word/${currentActiveRecordId}`;
+    
+    const res = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (!res.ok) {
+      throw new Error(`Export failed with status ${res.status}`);
+    }
+    
+    const blob = await res.blob();
     const blobUrl = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = blobUrl;
-    link.download = 'export.docx';
+    link.download = `record-${currentActiveRecordId}.docx`;
     link.click();
     window.URL.revokeObjectURL(blobUrl);
-  });
+  } catch (err) {
+    console.error('Word export error:', err);
+    alert('Failed to export to Word: ' + err.message);
+  }
 });
 
 // ==================== DELETE ====================
