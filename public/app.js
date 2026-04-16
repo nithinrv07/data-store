@@ -412,7 +412,7 @@ if (exportAllBtn) {
       window.URL.revokeObjectURL(blobUrl);
       console.log('✅ Excel export completed:', fileName);
       
-      exportAllBtn.textContent = '📊 Export All';
+      exportAllBtn.textContent = 'Export All';
       exportAllBtn.disabled = false;
     } catch (err) {
       console.error('❌ Export error:', err);
