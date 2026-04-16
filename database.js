@@ -8,17 +8,21 @@ const MONGODB_URI = process.env.MONGODB_URI;
 let dbConnected = false;
 
 // Fallback storage file
-const FALLBACK_DATA_FILE = path.join(__dirname, '.fallback_data.json');
+const FALLBACK_DATA_FILE = path.join(__dirname, 'fallback_data.json');
 
 // Load fallback data from file
 const loadFallbackData = () => {
   try {
     if (fs.existsSync(FALLBACK_DATA_FILE)) {
       const data = fs.readFileSync(FALLBACK_DATA_FILE, 'utf8');
-      return JSON.parse(data);
+      const parsed = JSON.parse(data);
+      console.log('✅ Loaded fallback data from file:', parsed.records.length, 'records');
+      return parsed;
+    } else {
+      console.log('📄 Fallback data file does not exist yet');
     }
   } catch (err) {
-    console.error('Error loading fallback data:', err.message);
+    console.error('❌ Error loading fallback data:', err.message);
   }
   return { records: [] };
 };
@@ -27,8 +31,9 @@ const loadFallbackData = () => {
 const saveFallbackData = (data) => {
   try {
     fs.writeFileSync(FALLBACK_DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+    console.log('💾 Saved fallback data to file:', FALLBACK_DATA_FILE, 'Records:', data.records.length);
   } catch (err) {
-    console.error('Error saving fallback data:', err.message);
+    console.error('❌ Error saving fallback data:', err.message);
   }
 };
 
@@ -126,6 +131,8 @@ const fallbackUsers = [
 const fallbackData = loadFallbackData();
 const fallbackRecords = fallbackData.records;
 
+console.log('📊 Initializing fallback records:', fallbackRecords.length, 'records loaded');
+
 // Query builder for chaining (mimics Mongoose Query)
 class QueryBuilder {
   constructor(results) {
@@ -202,7 +209,7 @@ Record.create = async function(data) {
 // Override Record.find to support fallback
 Record.find = function(query = {}) {
   if (!dbConnected) {
-    console.log('🔄 Using fallback storage for record find...');
+    console.log('🔄 Using fallback storage for record find... Total records available:', fallbackRecords.length);
     let results = [...fallbackRecords];
     
     if (query.$or) {
@@ -225,6 +232,7 @@ Record.find = function(query = {}) {
       });
     }
     
+    console.log('✅ Found', results.length, 'records');
     return new QueryBuilder(results);
   }
   
