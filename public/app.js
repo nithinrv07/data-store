@@ -181,9 +181,32 @@ navAdd.addEventListener('click', () => showView('entry'));
 entryForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const payload = {
+    procNo: document.getElementById('entry-procNo').value,
+    hosUpdatedPer: document.getElementById('entry-hosUpdatedPer').value,
+    hosUpdatedTerm: document.getElementById('entry-hosUpdatedTerm').value,
+    hosUpdatedTotal: document.getElementById('entry-hosUpdatedTotal').value,
+    sanctionedPostPer: document.getElementById('entry-sanctionedPostPer').value,
+    sanctionedPostTerm: document.getElementById('entry-sanctionedPostTerm').value,
+    sanctionedPostTotal: document.getElementById('entry-sanctionedPostTotal').value,
+    filled: document.getElementById('entry-filled').value,
+    vacant: document.getElementById('entry-vacant').value,
     name: document.getElementById('entry-name').value,
     dob: document.getElementById('entry-dob').value,
-    address: document.getElementById('entry-address').value,
+    option: document.getElementById('entry-option').value,
+    modeOfAppointment: document.getElementById('entry-modeOfAppointment').value,
+    year: document.getElementById('entry-year').value,
+    rank: document.getElementById('entry-rank').value,
+    designation: document.getElementById('entry-designation').value,
+    nativeDistrict: document.getElementById('entry-nativeDistrict').value,
+    nativeTaluk: document.getElementById('entry-nativeTaluk').value,
+    gender: document.getElementById('entry-gender').value,
+    section: document.getElementById('entry-section').value,
+    dateOfJoining: document.getElementById('entry-dateOfJoining').value,
+    subDivision: document.getElementById('entry-subDivision').value,
+    division: document.getElementById('entry-division').value,
+    circle: document.getElementById('entry-circle').value,
+    region: document.getElementById('entry-region').value,
+    remarks: document.getElementById('entry-remarks').value,
     email: document.getElementById('entry-email').value,
     phone: document.getElementById('entry-phone').value,
   };
@@ -358,28 +381,184 @@ sortSelect.addEventListener('change', (e) => {
   }
 });
 
+// ==================== EXPORT ALL ====================
+const exportAllBtn = document.getElementById('export-all-btn');
+if (exportAllBtn) {
+  exportAllBtn.addEventListener('click', async () => {
+    try {
+      console.log('📥 Exporting all records to Excel...');
+      exportAllBtn.textContent = '⏳ Exporting...';
+      exportAllBtn.disabled = true;
+      
+      const res = await fetch('/api/export/all-excel', {
+        headers: tokenManager.getAuthHeader()
+      });
+      
+      if (!res.ok) {
+        throw new Error(`Export failed with status ${res.status}`);
+      }
+      
+      const blob = await res.blob();
+      console.log('✅ Received blob:', blob.size, 'bytes');
+      
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      
+      const fileName = `all-records-${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.download = fileName;
+      link.click();
+      
+      window.URL.revokeObjectURL(blobUrl);
+      console.log('✅ Excel export completed:', fileName);
+      
+      exportAllBtn.textContent = '📊 Export All';
+      exportAllBtn.disabled = false;
+    } catch (err) {
+      console.error('❌ Export error:', err);
+      alert('Failed to export records: ' + err.message);
+      exportAllBtn.textContent = '📊 Export All';
+      exportAllBtn.disabled = false;
+    }
+  });
+}
+
 // ==================== MODAL ====================
 function openModal(record) {
   currentActiveRecordId = record._id;
   modalName.textContent = record.name;
   
   modalBody.innerHTML = `
-    <div class="data-row">
-      <div class="data-label">Date of Birth</div>
-      <div class="data-value">${record.dob}</div>
+    <div style="margin-bottom: 20px;">
+      <h5 style="color: var(--primary-color); margin-bottom: 10px;">Basic Information</h5>
+      <div class="data-row">
+        <div class="data-label">Proc. No.</div>
+        <div class="data-value">${record.procNo || 'N/A'}</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">Date of Birth</div>
+        <div class="data-value">${record.dob || 'N/A'}</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">Gender</div>
+        <div class="data-value">${record.gender || 'N/A'}</div>
+      </div>
     </div>
-    <div class="data-row">
-      <div class="data-label">Address</div>
-      <div class="data-value">${record.address}</div>
+
+    <div style="margin-bottom: 20px;">
+      <h5 style="color: var(--primary-color); margin-bottom: 10px;">Position Information</h5>
+      <div class="data-row">
+        <div class="data-label">Designation</div>
+        <div class="data-value">${record.designation || 'N/A'}</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">Rank</div>
+        <div class="data-value">${record.rank || 'N/A'}</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">Option</div>
+        <div class="data-value">${record.option || 'N/A'}</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">Mode of Appointment</div>
+        <div class="data-value">${record.modeOfAppointment || 'N/A'}</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">Section</div>
+        <div class="data-value">${record.section || 'N/A'}</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">Year</div>
+        <div class="data-value">${record.year || 'N/A'}</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">Date of Joining</div>
+        <div class="data-value">${record.dateOfJoining || 'N/A'}</div>
+      </div>
     </div>
-    <div class="data-row">
-      <div class="data-label">Email</div>
-      <div class="data-value">${record.email || 'N/A'}</div>
+
+    <div style="margin-bottom: 20px;">
+      <h5 style="color: var(--primary-color); margin-bottom: 10px;">HOS & Sanctioned Post</h5>
+      <div class="data-row">
+        <div class="data-label">HOS Updated - Per</div>
+        <div class="data-value">${record.hosUpdatedPer || 'N/A'}</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">HOS Updated - Term</div>
+        <div class="data-value">${record.hosUpdatedTerm || 'N/A'}</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">HOS Updated - Total</div>
+        <div class="data-value">${record.hosUpdatedTotal || 'N/A'}</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">Sanctioned Post - Per</div>
+        <div class="data-value">${record.sanctionedPostPer || 'N/A'}</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">Sanctioned Post - Term</div>
+        <div class="data-value">${record.sanctionedPostTerm || 'N/A'}</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">Sanctioned Post - Total</div>
+        <div class="data-value">${record.sanctionedPostTotal || 'N/A'}</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">Filled</div>
+        <div class="data-value">${record.filled || 'N/A'}</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">Vacant</div>
+        <div class="data-value">${record.vacant || 'N/A'}</div>
+      </div>
     </div>
-    <div class="data-row">
-      <div class="data-label">Phone</div>
-      <div class="data-value">${record.phone || 'N/A'}</div>
+
+    <div style="margin-bottom: 20px;">
+      <h5 style="color: var(--primary-color); margin-bottom: 10px;">Location Information</h5>
+      <div class="data-row">
+        <div class="data-label">Native District</div>
+        <div class="data-value">${record.nativeDistrict || 'N/A'}</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">Native Taluk</div>
+        <div class="data-value">${record.nativeTaluk || 'N/A'}</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">Division</div>
+        <div class="data-value">${record.division || 'N/A'}</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">Circle</div>
+        <div class="data-value">${record.circle || 'N/A'}</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">Sub Division</div>
+        <div class="data-value">${record.subDivision || 'N/A'}</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">Region</div>
+        <div class="data-value">${record.region || 'N/A'}</div>
+      </div>
     </div>
+
+    <div style="margin-bottom: 20px;">
+      <h5 style="color: var(--primary-color); margin-bottom: 10px;">Contact Information</h5>
+      <div class="data-row">
+        <div class="data-label">Email</div>
+        <div class="data-value">${record.email || 'N/A'}</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">Phone</div>
+        <div class="data-value">${record.phone || 'N/A'}</div>
+      </div>
+    </div>
+
+    ${record.remarks ? `
+    <div style="margin-bottom: 20px;">
+      <h5 style="color: var(--primary-color); margin-bottom: 10px;">Remarks</h5>
+      <div class="data-value" style="padding: 10px; background: var(--bg-sub); border-radius: 5px;">${record.remarks}</div>
+    </div>
+    ` : ''}
   `;
   
   detailsModal.classList.remove('hidden');
@@ -414,9 +593,32 @@ if (btnEditRecord) {
       }
 
       // Populate form with record data
-      document.getElementById('entry-name').value = recordToEdit.name;
-      document.getElementById('entry-dob').value = recordToEdit.dob;
-      document.getElementById('entry-address').value = recordToEdit.address;
+      document.getElementById('entry-procNo').value = recordToEdit.procNo || '';
+      document.getElementById('entry-hosUpdatedPer').value = recordToEdit.hosUpdatedPer || '';
+      document.getElementById('entry-hosUpdatedTerm').value = recordToEdit.hosUpdatedTerm || '';
+      document.getElementById('entry-hosUpdatedTotal').value = recordToEdit.hosUpdatedTotal || '';
+      document.getElementById('entry-sanctionedPostPer').value = recordToEdit.sanctionedPostPer || '';
+      document.getElementById('entry-sanctionedPostTerm').value = recordToEdit.sanctionedPostTerm || '';
+      document.getElementById('entry-sanctionedPostTotal').value = recordToEdit.sanctionedPostTotal || '';
+      document.getElementById('entry-filled').value = recordToEdit.filled || '';
+      document.getElementById('entry-vacant').value = recordToEdit.vacant || '';
+      document.getElementById('entry-name').value = recordToEdit.name || '';
+      document.getElementById('entry-dob').value = recordToEdit.dob || '';
+      document.getElementById('entry-option').value = recordToEdit.option || '';
+      document.getElementById('entry-modeOfAppointment').value = recordToEdit.modeOfAppointment || '';
+      document.getElementById('entry-year').value = recordToEdit.year || '';
+      document.getElementById('entry-rank').value = recordToEdit.rank || '';
+      document.getElementById('entry-designation').value = recordToEdit.designation || '';
+      document.getElementById('entry-nativeDistrict').value = recordToEdit.nativeDistrict || '';
+      document.getElementById('entry-nativeTaluk').value = recordToEdit.nativeTaluk || '';
+      document.getElementById('entry-gender').value = recordToEdit.gender || '';
+      document.getElementById('entry-section').value = recordToEdit.section || '';
+      document.getElementById('entry-dateOfJoining').value = recordToEdit.dateOfJoining || '';
+      document.getElementById('entry-subDivision').value = recordToEdit.subDivision || '';
+      document.getElementById('entry-division').value = recordToEdit.division || '';
+      document.getElementById('entry-circle').value = recordToEdit.circle || '';
+      document.getElementById('entry-region').value = recordToEdit.region || '';
+      document.getElementById('entry-remarks').value = recordToEdit.remarks || '';
       document.getElementById('entry-email').value = recordToEdit.email || '';
       document.getElementById('entry-phone').value = recordToEdit.phone || '';
 

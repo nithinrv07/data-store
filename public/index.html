@@ -52,30 +52,176 @@
         <div class="card glass-effect">
           <h2 id="entry-title">Enter New Record</h2>
           <form id="entry-form">
-            <div class="input-row">
-              <div class="input-group">
-                <label for="entry-name">Full Name</label>
-                <input type="text" id="entry-name" required>
+            <!-- Section 1: Basic Information -->
+            <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--border-color);">
+              <h4 style="color: var(--primary-color); margin-bottom: 15px;">Basic Information</h4>
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="entry-procNo">Proc. No. *</label>
+                  <input type="text" id="entry-procNo" required>
+                </div>
+                <div class="input-group">
+                  <label for="entry-name">Name *</label>
+                  <input type="text" id="entry-name" required>
+                </div>
               </div>
-              <div class="input-group">
-                <label for="entry-dob">Date of Birth</label>
-                <input type="date" id="entry-dob" required>
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="entry-dob">Date of Birth (D.O.B) *</label>
+                  <input type="date" id="entry-dob" required>
+                </div>
+                <div class="input-group">
+                  <label for="entry-gender">Gender</label>
+                  <select id="entry-gender">
+                    <option value="">Select</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
               </div>
-            </div>
-            
-            <div class="input-group">
-              <label for="entry-address">Address</label>
-              <textarea id="entry-address" rows="3" required></textarea>
             </div>
 
-            <div class="input-row">
-              <div class="input-group">
-                <label for="entry-email">Email (Optional)</label>
-                <input type="email" id="entry-email">
+            <!-- Section 2: Position Information -->
+            <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--border-color);">
+              <h4 style="color: var(--primary-color); margin-bottom: 15px;">Position Information</h4>
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="entry-designation">Designation</label>
+                  <input type="text" id="entry-designation">
+                </div>
+                <div class="input-group">
+                  <label for="entry-rank">Rank</label>
+                  <input type="text" id="entry-rank">
+                </div>
               </div>
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="entry-option">Option</label>
+                  <input type="text" id="entry-option">
+                </div>
+                <div class="input-group">
+                  <label for="entry-modeOfAppointment">Mode of Appointment/Promotion/Deputation</label>
+                  <input type="text" id="entry-modeOfAppointment">
+                </div>
+              </div>
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="entry-section">Section</label>
+                  <input type="text" id="entry-section">
+                </div>
+                <div class="input-group">
+                  <label for="entry-year">Year</label>
+                  <input type="number" id="entry-year">
+                </div>
+              </div>
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="entry-dateOfJoining">Date of Joining</label>
+                  <input type="date" id="entry-dateOfJoining">
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 3: HOS & Sanctioned Post Information -->
+            <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--border-color);">
+              <h4 style="color: var(--primary-color); margin-bottom: 15px;">HOS & Sanctioned Post</h4>
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="entry-hosUpdatedPer">HOS Updated - Per</label>
+                  <input type="number" id="entry-hosUpdatedPer">
+                </div>
+                <div class="input-group">
+                  <label for="entry-hosUpdatedTerm">HOS Updated - Term</label>
+                  <input type="number" id="entry-hosUpdatedTerm">
+                </div>
+                <div class="input-group">
+                  <label for="entry-hosUpdatedTotal">HOS Updated - Total</label>
+                  <input type="number" id="entry-hosUpdatedTotal">
+                </div>
+              </div>
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="entry-sanctionedPostPer">Sanctioned Post - Per</label>
+                  <input type="number" id="entry-sanctionedPostPer">
+                </div>
+                <div class="input-group">
+                  <label for="entry-sanctionedPostTerm">Sanctioned Post - Term</label>
+                  <input type="number" id="entry-sanctionedPostTerm">
+                </div>
+                <div class="input-group">
+                  <label for="entry-sanctionedPostTotal">Sanctioned Post - Total</label>
+                  <input type="number" id="entry-sanctionedPostTotal">
+                </div>
+              </div>
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="entry-filled">Filled</label>
+                  <input type="number" id="entry-filled">
+                </div>
+                <div class="input-group">
+                  <label for="entry-vacant">Vacant</label>
+                  <input type="number" id="entry-vacant">
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 4: Location Information -->
+            <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--border-color);">
+              <h4 style="color: var(--primary-color); margin-bottom: 15px;">Location Information</h4>
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="entry-nativeDistrict">Native District</label>
+                  <input type="text" id="entry-nativeDistrict">
+                </div>
+                <div class="input-group">
+                  <label for="entry-nativeTaluk">Native Taluk</label>
+                  <input type="text" id="entry-nativeTaluk">
+                </div>
+              </div>
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="entry-division">Division</label>
+                  <input type="text" id="entry-division">
+                </div>
+                <div class="input-group">
+                  <label for="entry-circle">Circle</label>
+                  <input type="text" id="entry-circle">
+                </div>
+              </div>
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="entry-subDivision">Sub Division</label>
+                  <input type="text" id="entry-subDivision">
+                </div>
+                <div class="input-group">
+                  <label for="entry-region">Region</label>
+                  <input type="text" id="entry-region">
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 5: Contact Information -->
+            <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--border-color);">
+              <h4 style="color: var(--primary-color); margin-bottom: 15px;">Contact Information</h4>
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="entry-email">Email (Optional)</label>
+                  <input type="email" id="entry-email">
+                </div>
+                <div class="input-group">
+                  <label for="entry-phone">Phone (Optional)</label>
+                  <input type="tel" id="entry-phone">
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 6: Additional Notes -->
+            <div style="margin-bottom: 20px;">
+              <h4 style="color: var(--primary-color); margin-bottom: 15px;">Additional Notes</h4>
               <div class="input-group">
-                <label for="entry-phone">Phone (Optional)</label>
-                <input type="tel" id="entry-phone">
+                <label for="entry-remarks">Remarks</label>
+                <textarea id="entry-remarks" rows="4" placeholder="Add any additional remarks..."></textarea>
               </div>
             </div>
 
@@ -105,6 +251,7 @@
             <option value="name-asc">Name (A-Z)</option>
             <option value="name-desc">Name (Z-A)</option>
           </select>
+          <button id="export-all-btn" class="btn" style="background-color: #28a745; color: white;">📊 Export All</button>
         </div>
         <div id="loading-indicator" style="display: none; text-align: center; padding: 20px; color: var(--text-sub);">
           ⏳ Loading records...

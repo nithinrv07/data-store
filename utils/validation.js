@@ -6,6 +6,11 @@ const validator = require('validator');
 const validateRecord = (data) => {
   const errors = {};
 
+  // Validate Proc. No.
+  if (!data.procNo || !data.procNo.toString().trim()) {
+    errors.procNo = 'Proc. No. is required';
+  }
+
   // Validate name
   if (!data.name || !data.name.trim()) {
     errors.name = 'Name is required';
@@ -18,17 +23,6 @@ const validateRecord = (data) => {
   // Validate DOB
   if (!data.dob || !data.dob.trim()) {
     errors.dob = 'Date of Birth is required';
-  } else if (!validator.isISO8601(data.dob)) {
-    errors.dob = 'Date of Birth must be a valid date (YYYY-MM-DD)';
-  }
-
-  // Validate address
-  if (!data.address || !data.address.trim()) {
-    errors.address = 'Address is required';
-  } else if (data.address.length < 5) {
-    errors.address = 'Address must be at least 5 characters';
-  } else if (data.address.length > 500) {
-    errors.address = 'Address must be less than 500 characters';
   }
 
   // Validate email (optional but if provided, must be valid)
@@ -43,6 +37,11 @@ const validateRecord = (data) => {
     if (!validator.isMobilePhone(data.phone, 'any', { strictMode: false })) {
       errors.phone = 'Phone must be a valid phone number';
     }
+  }
+
+  // Validate gender if provided
+  if (data.gender && !['Male', 'Female', 'Other', ''].includes(data.gender)) {
+    errors.gender = 'Gender must be Male, Female, or Other';
   }
 
   return Object.keys(errors).length > 0 ? errors : null;
@@ -80,9 +79,32 @@ const validateSearchQuery = (query) => {
  */
 const sanitizeRecord = (data) => {
   return {
+    procNo: data.procNo ? data.procNo.toString().trim() : '',
+    hosUpdatedPer: data.hosUpdatedPer ? parseInt(data.hosUpdatedPer) : null,
+    hosUpdatedTerm: data.hosUpdatedTerm ? parseInt(data.hosUpdatedTerm) : null,
+    hosUpdatedTotal: data.hosUpdatedTotal ? parseInt(data.hosUpdatedTotal) : null,
+    sanctionedPostPer: data.sanctionedPostPer ? parseInt(data.sanctionedPostPer) : null,
+    sanctionedPostTerm: data.sanctionedPostTerm ? parseInt(data.sanctionedPostTerm) : null,
+    sanctionedPostTotal: data.sanctionedPostTotal ? parseInt(data.sanctionedPostTotal) : null,
+    filled: data.filled ? parseInt(data.filled) : null,
+    vacant: data.vacant ? parseInt(data.vacant) : null,
     name: data.name ? data.name.trim() : '',
     dob: data.dob ? data.dob.trim() : '',
-    address: data.address ? data.address.trim() : '',
+    option: data.option ? data.option.trim() : '',
+    modeOfAppointment: data.modeOfAppointment ? data.modeOfAppointment.trim() : '',
+    year: data.year ? parseInt(data.year) : null,
+    rank: data.rank ? data.rank.trim() : '',
+    designation: data.designation ? data.designation.trim() : '',
+    nativeDistrict: data.nativeDistrict ? data.nativeDistrict.trim() : '',
+    nativeTaluk: data.nativeTaluk ? data.nativeTaluk.trim() : '',
+    gender: data.gender ? data.gender.trim() : '',
+    section: data.section ? data.section.trim() : '',
+    dateOfJoining: data.dateOfJoining ? data.dateOfJoining.trim() : '',
+    subDivision: data.subDivision ? data.subDivision.trim() : '',
+    division: data.division ? data.division.trim() : '',
+    circle: data.circle ? data.circle.trim() : '',
+    region: data.region ? data.region.trim() : '',
+    remarks: data.remarks ? data.remarks.trim() : '',
     email: data.email ? data.email.trim().toLowerCase() : '',
     phone: data.phone ? data.phone.trim() : ''
   };

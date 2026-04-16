@@ -64,6 +64,43 @@ const connectDB = async () => {
 
 // Schema for Records with validation
 const recordSchema = new mongoose.Schema({
+  procNo: { 
+    type: String, 
+    required: [true, 'Proc. No. is required'],
+    trim: true
+  },
+  hosUpdatedPer: { 
+    type: Number,
+    trim: true
+  },
+  hosUpdatedTerm: { 
+    type: Number,
+    trim: true
+  },
+  hosUpdatedTotal: { 
+    type: Number,
+    trim: true
+  },
+  sanctionedPostPer: { 
+    type: Number,
+    trim: true
+  },
+  sanctionedPostTerm: { 
+    type: Number,
+    trim: true
+  },
+  sanctionedPostTotal: { 
+    type: Number,
+    trim: true
+  },
+  filled: { 
+    type: Number,
+    trim: true
+  },
+  vacant: { 
+    type: Number,
+    trim: true
+  },
   name: { 
     type: String, 
     required: [true, 'Name is required'],
@@ -76,18 +113,73 @@ const recordSchema = new mongoose.Schema({
     required: [true, 'Date of Birth is required'],
     trim: true
   },
-  address: { 
-    type: String, 
-    required: [true, 'Address is required'],
+  option: { 
+    type: String,
+    trim: true
+  },
+  modeOfAppointment: { 
+    type: String,
+    trim: true
+  },
+  year: { 
+    type: Number,
+    trim: true
+  },
+  rank: { 
+    type: String,
+    trim: true
+  },
+  designation: { 
+    type: String,
+    trim: true
+  },
+  nativeDistrict: { 
+    type: String,
+    trim: true
+  },
+  nativeTaluk: { 
+    type: String,
+    trim: true
+  },
+  gender: { 
+    type: String,
     trim: true,
-    minlength: [5, 'Address must be at least 5 characters'],
-    maxlength: [500, 'Address must be less than 500 characters']
+    enum: ['Male', 'Female', 'Other', '']
+  },
+  section: { 
+    type: String,
+    trim: true
+  },
+  dateOfJoining: { 
+    type: String,
+    trim: true
+  },
+  subDivision: { 
+    type: String,
+    trim: true
+  },
+  division: { 
+    type: String,
+    trim: true
+  },
+  circle: { 
+    type: String,
+    trim: true
+  },
+  region: { 
+    type: String,
+    trim: true
+  },
+  remarks: { 
+    type: String,
+    trim: true,
+    maxlength: [1000, 'Remarks must be less than 1000 characters']
   },
   email: { 
     type: String,
     trim: true,
     lowercase: true,
-    sparse: true, // Allow null values while maintaining uniqueness for non-null values
+    sparse: true,
     match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Invalid email format']
   },
   phone: { 

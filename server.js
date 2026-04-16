@@ -238,6 +238,82 @@ app.get('/api/export/excel/:id', async (req, res, next) => {
   }
 });
 
+// Export all records to Excel
+app.get('/api/export/all-excel', async (req, res, next) => {
+  try {
+    console.log('📥 Export all records to Excel');
+    const records = await Record.find().sort({ createdAt: -1 });
+    
+    console.log(`✅ Found ${records.length} records, generating Excel workbook...`);
+    const workbook = new excel.Workbook();
+    const sheet = workbook.addWorksheet('All Records');
+
+    // Add headers - all field names
+    const headers = [
+      'Proc. No.', 'Name', 'D.O.B', 'Gender', 'Designation', 'Rank', 'Option', 
+      'Mode of Appointment', 'Section', 'Year', 'Date of Joining',
+      'HOS Updated (Per)', 'HOS Updated (Term)', 'HOS Updated (Total)',
+      'Sanctioned Post (Per)', 'Sanctioned Post (Term)', 'Sanctioned Post (Total)',
+      'Filled', 'Vacant', 'Native District', 'Native Taluk', 'Division', 'Circle',
+      'Sub Division', 'Region', 'Email', 'Phone', 'Remarks', 'Created At'
+    ];
+    sheet.addRow(headers);
+
+    // Style headers
+    sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4472C4' } };
+
+    // Add data rows
+    records.forEach(record => {
+      sheet.addRow([
+        record.procNo || '',
+        record.name || '',
+        record.dob || '',
+        record.gender || '',
+        record.designation || '',
+        record.rank || '',
+        record.option || '',
+        record.modeOfAppointment || '',
+        record.section || '',
+        record.year || '',
+        record.dateOfJoining || '',
+        record.hosUpdatedPer || '',
+        record.hosUpdatedTerm || '',
+        record.hosUpdatedTotal || '',
+        record.sanctionedPostPer || '',
+        record.sanctionedPostTerm || '',
+        record.sanctionedPostTotal || '',
+        record.filled || '',
+        record.vacant || '',
+        record.nativeDistrict || '',
+        record.nativeTaluk || '',
+        record.division || '',
+        record.circle || '',
+        record.subDivision || '',
+        record.region || '',
+        record.email || '',
+        record.phone || '',
+        record.remarks || '',
+        record.createdAt ? new Date(record.createdAt).toLocaleString() : ''
+      ]);
+    });
+
+    // Auto-fit columns
+    sheet.columns.forEach(column => {
+      column.width = 15;
+    });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="all-records-${new Date().toISOString().split('T')[0]}.xlsx"`);
+    console.log('✅ Exporting all records to Excel');
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    console.error('❌ Export all error:', err.message, err.stack);
+    next(err);
+  }
+});
+
 app.get('/api/export/word/:id', async (req, res, next) => {
   try {
     console.log('📥 Word export request for ID:', req.params.id);
