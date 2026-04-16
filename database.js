@@ -129,9 +129,16 @@ const fallbackUsers = [
 
 // Fallback storage for records (when DB is not available)
 const fallbackData = loadFallbackData();
-const fallbackRecords = fallbackData.records;
+let fallbackRecords = fallbackData.records;
 
 console.log('📊 Initializing fallback records:', fallbackRecords.length, 'records loaded');
+
+// Function to refresh fallback records from file
+const refreshFallbackRecords = () => {
+  const freshData = loadFallbackData();
+  fallbackRecords = freshData.records;
+  return fallbackRecords;
+};
 
 // Query builder for chaining (mimics Mongoose Query)
 class QueryBuilder {
@@ -190,7 +197,8 @@ User.findOne = async function(query) {
 // Override Record.create to support fallback
 Record.create = async function(data) {
   if (!dbConnected) {
-    console.log('🔄 Using fallback storage for record creation...');
+    console.log('🔄 Using fallback storage for record creation... refreshing data');
+    const records = refreshFallbackRecords();
     const id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
     const record = {
       _id: id,
@@ -198,8 +206,9 @@ Record.create = async function(data) {
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    fallbackRecords.push(record);
-    saveFallbackData({ records: fallbackRecords });
+    records.push(record);
+    fallbackRecords = records; // Update global reference
+    saveFallbackData({ records });
     console.log('✅ Record saved to fallback storage:', id);
     return record;
   }
@@ -209,11 +218,13 @@ Record.create = async function(data) {
 // Override Record.find to support fallback
 Record.find = function(query = {}) {
   if (!dbConnected) {
-    console.log('🔄 Using fallback storage for record find... Total records available:', fallbackRecords.length);
-    let results = [...fallbackRecords];
+    console.log('🔄 Using fallback storage for record find... refreshing data');
+    const records = refreshFallbackRecords();
+    console.log('📊 Total records available:', records.length);
+    let results = [...records];
     
     if (query.$or) {
-      results = fallbackRecords.filter(record => {
+      results = records.filter(record => {
         return query.$or.some(condition => {
           if (condition.name && condition.name.$regex) {
             const regex = new RegExp(condition.name.$regex, condition.name.$options || '');
@@ -242,10 +253,11 @@ Record.find = function(query = {}) {
 // Override Record.findById to support fallback
 Record.findById = async function(id) {
   if (!dbConnected) {
-    console.log('� Using fallback storage for record findById...');
+    console.log('🔍 Using fallback storage for record findById... refreshing data');
+    const records = refreshFallbackRecords();
     console.log('   Looking for ID:', id);
-    console.log('   Available IDs:', fallbackRecords.map(r => r._id));
-    const found = fallbackRecords.find(r => r._id === id);
+    console.log('   Available IDs:', records.map(r => r._id));
+    const found = records.find(r => r._id === id);
     if (found) {
       console.log('   ✅ Found record:', found.name);
     } else {
@@ -259,21 +271,25 @@ Record.findById = async function(id) {
 // Override Record.findByIdAndUpdate to support fallback
 Record.findByIdAndUpdate = async function(id, data, options = {}) {
   if (!dbConnected) {
-    console.log('🔄 Using fallback storage for record update...');
-    const index = fallbackRecords.findIndex(r => r._id === id);
+    console.log('🔄 Using fallback storage for record update... refreshing data');
+    const records = refreshFallbackRecords();
+    const index = records.findIndex(r => r._id === id);
     if (index === -1) {
+      console.log('❌ Record not found for update:', id);
       return null;
     }
-    fallbackRecords[index] = {
-      ...fallbackRecords[index],
+    records[index] = {
+      ...records[index],
       ...data,
       updatedAt: new Date()
     };
-    saveFallbackData({ records: fallbackRecords });
+    fallbackRecords = records; // Update global reference
+    saveFallbackData({ records });
+    console.log('✅ Record updated:', id);
     if (options.new) {
-      return fallbackRecords[index];
+      return records[index];
     }
-    return fallbackRecords[index];
+    return records[index];
   }
   return originalRecordFindByIdAndUpdate(id, data, options);
 };
@@ -281,13 +297,17 @@ Record.findByIdAndUpdate = async function(id, data, options = {}) {
 // Override Record.findByIdAndDelete to support fallback
 Record.findByIdAndDelete = async function(id) {
   if (!dbConnected) {
-    console.log('🔄 Using fallback storage for record delete...');
-    const index = fallbackRecords.findIndex(r => r._id === id);
+    console.log('🔄 Using fallback storage for record delete... refreshing data');
+    const records = refreshFallbackRecords();
+    const index = records.findIndex(r => r._id === id);
     if (index === -1) {
+      console.log('❌ Record not found for delete:', id);
       return null;
     }
-    const deleted = fallbackRecords.splice(index, 1);
-    saveFallbackData({ records: fallbackRecords });
+    const deleted = records.splice(index, 1);
+    fallbackRecords = records; // Update global reference
+    saveFallbackData({ records });
+    console.log('✅ Record deleted:', id);
     return deleted[0];
   }
   return originalRecordFindByIdAndDelete(id);
