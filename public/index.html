@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Flow App</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  
+  <div class="app-container">
+    
+    <!-- LOGIN VIEW -->
+    <section id="login-view" class="view active">
+      <div class="card glass-effect">
+        <h1 class="gradient-text">Welcome Back</h1>
+        <p class="subtitle">Please login to continue</p>
+        <form id="login-form">
+          <div class="input-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" required>
+          </div>
+          <div class="input-group">
+            <label for="password">Password</label>
+            <div class="password-wrapper">
+              <input type="password" id="password" required>
+              <button type="button" id="toggle-password" class="toggle-btn">👁️</button>
+            </div>
+          </div>
+          <p id="login-error" class="error-text"></p>
+          <button type="submit" class="btn primary-btn w-100">Login</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- MAIN DASHBOARD SHELL (visible after login) -->
+    <div id="main-app-shell" class="hidden">
+      
+      <!-- Navbar -->
+      <nav class="navbar glass-effect">
+        <div class="nav-brand gradient-text">Data Flow</div>
+        <div class="nav-links">
+          <button id="nav-dashboard" class="nav-btn active">Dashboard</button>
+          <button id="nav-add" class="nav-btn">Add New</button>
+          <button id="nav-logout" class="nav-btn warning">Logout</button>
+        </div>
+      </nav>
+
+      <!-- DATA ENTRY VIEW -->
+      <section id="entry-view" class="view hidden">
+        <div class="card glass-effect">
+          <h2>Enter New Record</h2>
+          <form id="entry-form">
+            <div class="input-row">
+              <div class="input-group">
+                <label for="entry-name">Full Name</label>
+                <input type="text" id="entry-name" required>
+              </div>
+              <div class="input-group">
+                <label for="entry-dob">Date of Birth</label>
+                <input type="date" id="entry-dob" required>
+              </div>
+            </div>
+            
+            <div class="input-group">
+              <label for="entry-address">Address</label>
+              <textarea id="entry-address" rows="3" required></textarea>
+            </div>
+
+            <div class="input-row">
+              <div class="input-group">
+                <label for="entry-email">Email (Optional)</label>
+                <input type="email" id="entry-email">
+              </div>
+              <div class="input-group">
+                <label for="entry-phone">Phone (Optional)</label>
+                <input type="tel" id="entry-phone">
+              </div>
+            </div>
+
+            <p id="entry-msg" class="success-text"></p>
+            <button type="submit" class="btn primary-btn">Save Record</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- DASHBOARD VIEW -->
+      <section id="dashboard-view" class="view hidden">
+        <h2 class="section-title">All Records</h2>
+        <div class="search-bar">
+          <input type="text" id="search-input" placeholder="Search by name, email, or phone..." class="search-input">
+          <button id="search-btn" class="btn primary-btn">Search</button>
+        </div>
+        <div class="records-grid" id="records-grid">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+    </div>
+
+  </div>
+
+  <!-- MODAL FOR FULL DETAILS -->
+  <div class="modal-overlay hidden" id="details-modal">
+    <div class="modal-content glass-effect scale-up">
+      <button class="close-modal" id="close-modal">&times;</button>
+      <h2 id="modal-name"></h2>
+      <div class="modal-body" id="modal-body">
+        <!-- populated dynamically -->
+      </div>
+      <div class="modal-actions">
+        <button id="btn-export-excel" class="btn success-btn">Export Excel</button>
+        <button id="btn-export-word" class="btn alt-btn">Export to Word (Tamil)</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
