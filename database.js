@@ -100,9 +100,19 @@ const originalUserFindOne = User.findOne.bind(User);
 
 // Override findOne to support fallback when DB is down
 User.findOne = async function(query) {
+  console.log('🔍 User.findOne called with query:', query);
+  console.log('📊 DB Connected?:', dbConnected);
+  
   if (!dbConnected) {
-    // Use fallback authentication
-    const user = fallbackUsers.find(u => u.username === query.username && u.password === query.password);
+    console.log('🔄 Using fallback authentication...');
+    console.log('Available fallback users:', fallbackUsers.map(u => u.username));
+    
+    const user = fallbackUsers.find(u => {
+      const match = u.username === query.username && u.password === query.password;
+      console.log(`  Checking ${u.username}: ${match ? '✅ MATCH' : '❌ NO MATCH'}`);
+      return match;
+    });
+    
     if (user) {
       console.log('✅ User authenticated via fallback:', query.username);
       return { username: user.username, password: user.password, _id: 'fallback-user' };
@@ -110,6 +120,8 @@ User.findOne = async function(query) {
     console.log('❌ Fallback authentication failed for:', query.username);
     return null;
   }
+  
+  console.log('🗄️  Using MongoDB for authentication');
   return originalUserFindOne(query);
 };
 
