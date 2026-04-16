@@ -1,3 +1,34 @@
+// ==================== UTILITY FUNCTIONS ====================
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric' 
+  });
+}
+
+function sortRecords(records, sortBy = 'createdAt-desc') {
+  const [sortKey, sortOrder] = sortBy.split('-');
+  const sorted = [...records];
+  
+  sorted.sort((a, b) => {
+    let aVal = a[sortKey];
+    let bVal = b[sortKey];
+    
+    if (sortKey === 'name') {
+      aVal = aVal.toLowerCase();
+      bVal = bVal.toLowerCase();
+    }
+    
+    if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+  
+  return sorted;
+}
+
 // ==================== TOKEN MANAGEMENT ====================
 class TokenManager {
   constructor() {
@@ -87,9 +118,19 @@ const modalBody = document.getElementById('modal-body');
 const btnExcel = document.getElementById('btn-export-excel');
 const btnWord = document.getElementById('btn-export-word');
 const btnDeleteRecord = document.getElementById('btn-delete-record');
+const btnEditRecord = document.getElementById('btn-edit-record');
+
+// Additional UI elements
+const recordCount = document.getElementById('record-count');
+const sortSelect = document.getElementById('sort-select');
+const loadingIndicator = document.getElementById('loading-indicator');
+const entryTitle = document.getElementById('entry-title');
+const btnCancelEdit = document.getElementById('btn-cancel-edit');
 
 let currentActiveRecordId = null;
+let currentEditingRecordId = null;
 let allRecords = [];
+let currentSort = 'createdAt-desc';
 
 // ==================== ROUTING ====================
 function showView(viewName) {
@@ -152,19 +193,34 @@ entryForm.addEventListener('submit', async (e) => {
   msg.textContent = 'Saving...';
 
   try {
-    const res = await apiCall('/api/records', {
-      method: 'POST',
-      body: JSON.stringify(payload)
-    });
+    let res;
+    
+    if (currentEditingRecordId) {
+      // Update existing record
+      res = await apiCall(`/api/records/${currentEditingRecordId}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload)
+      });
+    } else {
+      // Create new record
+      res = await apiCall('/api/records', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+    }
 
     if (!res) return;
 
     const data = await res.json();
     if (data.success) {
-      console.log('✅ Record saved successfully:', data.record);
-      msg.textContent = "Record saved successfully!";
+      const isEdit = currentEditingRecordId ? true : false;
+      console.log(`✅ Record ${isEdit ? 'updated' : 'saved'} successfully:`, data.record);
+      msg.textContent = `Record ${isEdit ? 'updated' : 'saved'} successfully!`;
       msg.className = 'success-text';
       entryForm.reset();
+      currentEditingRecordId = null;
+      entryTitle.textContent = 'Enter New Record';
+      btnCancelEdit.style.display = 'none';
       console.log('⏱️ Waiting 1.5s before switching to dashboard...');
       setTimeout(() => {
         console.log('🔄 Switching to dashboard...');
@@ -183,6 +239,18 @@ entryForm.addEventListener('submit', async (e) => {
     msg.textContent = "Server error. Could not connect.";
     msg.className = 'error-text';
   }
+});
+
+// Cancel edit handler
+btnCancelEdit.addEventListener('click', (e) => {
+  e.preventDefault();
+  currentEditingRecordId = null;
+  entryForm.reset();
+  entryTitle.textContent = 'Enter New Record';
+  btnCancelEdit.style.display = 'none';
+  const msg = document.getElementById('entry-msg');
+  msg.textContent = '';
+  showView('dashboard');
 });
 
 // ==================== FETCH & DISPLAY RECORDS ====================
@@ -220,19 +288,25 @@ async function fetchRecords() {
 // Display records in grid
 function displayRecords(records) {
   recordsGrid.innerHTML = '';
+  loadingIndicator.style.display = 'none';
+  
+  // Update record count
+  recordCount.textContent = `Total: ${records.length}`;
+  
   if (records.length === 0) {
-    recordsGrid.innerHTML = '<p style="color:var(--text-sub)">No records found.</p>';
+    recordsGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-sub);"><p style="font-size: 1.1rem; margin: 0;">📭 No records found</p><p style="font-size: 0.95rem; margin: 10px 0 0 0;">Click "Add New" to create your first record</p></div>';
     return;
   }
 
   records.forEach(r => {
     const el = document.createElement('div');
     el.className = 'record-card';
-    const date = new Date(r.createdAt).toLocaleDateString();
+    const date = formatDate(r.createdAt);
     el.innerHTML = `
       <div>
         <div class="record-name">${r.name}</div>
-        <div class="record-meta">Added: ${date}</div>
+        <div class="record-meta">📅 ${date}</div>
+        ${r.email ? `<div class="record-meta">📧 ${r.email}</div>` : ''}
       </div>
       <div style="margin-top:15px; color:var(--primary); font-size:0.9rem; font-weight:600;">View Details &rarr;</div>
     `;
@@ -245,7 +319,8 @@ function displayRecords(records) {
 searchBtn.addEventListener('click', () => {
   const query = searchInput.value.toLowerCase().trim();
   if (query === '') {
-    displayRecords(allRecords);
+    const sorted = sortRecords(allRecords, currentSort);
+    displayRecords(sorted);
     return;
   }
 
@@ -254,12 +329,32 @@ searchBtn.addEventListener('click', () => {
     (r.email && r.email.toLowerCase().includes(query)) || 
     (r.phone && r.phone.toLowerCase().includes(query))
   );
-  displayRecords(filtered);
+  const sorted = sortRecords(filtered, currentSort);
+  displayRecords(sorted);
 });
 
 searchInput.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') {
     searchBtn.click();
+  }
+});
+
+// Sorting functionality
+sortSelect.addEventListener('change', (e) => {
+  currentSort = e.target.value;
+  const query = searchInput.value.toLowerCase().trim();
+  
+  if (query === '') {
+    const sorted = sortRecords(allRecords, currentSort);
+    displayRecords(sorted);
+  } else {
+    const filtered = allRecords.filter(r => 
+      r.name.toLowerCase().includes(query) || 
+      (r.email && r.email.toLowerCase().includes(query)) || 
+      (r.phone && r.phone.toLowerCase().includes(query))
+    );
+    const sorted = sortRecords(filtered, currentSort);
+    displayRecords(sorted);
   }
 });
 
@@ -301,6 +396,47 @@ detailsModal.addEventListener('click', (e) => {
     currentActiveRecordId = null;
   }
 });
+
+// ==================== EDIT ====================
+if (btnEditRecord) {
+  btnEditRecord.addEventListener('click', async () => {
+    if (!currentActiveRecordId) {
+      alert('No record selected');
+      return;
+    }
+
+    try {
+      // Find the record to edit
+      const recordToEdit = allRecords.find(r => r._id === currentActiveRecordId);
+      if (!recordToEdit) {
+        alert('Record not found');
+        return;
+      }
+
+      // Populate form with record data
+      document.getElementById('entry-name').value = recordToEdit.name;
+      document.getElementById('entry-dob').value = recordToEdit.dob;
+      document.getElementById('entry-address').value = recordToEdit.address;
+      document.getElementById('entry-email').value = recordToEdit.email || '';
+      document.getElementById('entry-phone').value = recordToEdit.phone || '';
+
+      // Update UI for edit mode
+      currentEditingRecordId = currentActiveRecordId;
+      entryTitle.textContent = `Edit Record: ${recordToEdit.name}`;
+      btnCancelEdit.style.display = 'inline-block';
+      const msg = document.getElementById('entry-msg');
+      msg.textContent = '';
+
+      // Close modal and switch to edit view
+      detailsModal.classList.add('hidden');
+      currentActiveRecordId = null;
+      showView('entry');
+    } catch (error) {
+      console.error('Error loading record for edit:', error);
+      alert('Error loading record for editing');
+    }
+  });
+}
 
 // ==================== EXPORT ====================
 btnExcel.addEventListener('click', async () => {

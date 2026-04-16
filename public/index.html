@@ -50,7 +50,7 @@
       <!-- DATA ENTRY VIEW -->
       <section id="entry-view" class="view hidden">
         <div class="card glass-effect">
-          <h2>Enter New Record</h2>
+          <h2 id="entry-title">Enter New Record</h2>
           <form id="entry-form">
             <div class="input-row">
               <div class="input-group">
@@ -80,17 +80,34 @@
             </div>
 
             <p id="entry-msg" class="success-text"></p>
-            <button type="submit" class="btn primary-btn">Save Record</button>
+            <div style="display: flex; gap: 10px;">
+              <button type="submit" class="btn primary-btn">Save Record</button>
+              <button type="button" id="btn-cancel-edit" class="btn" style="background-color: #6c757d; display: none;">Cancel</button>
+            </div>
           </form>
         </div>
       </section>
 
       <!-- DASHBOARD VIEW -->
       <section id="dashboard-view" class="view hidden">
-        <h2 class="section-title">All Records</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 class="section-title">All Records</h2>
+          <div style="font-size: 0.95rem; color: var(--text-sub);">
+            <span id="record-count">Total: 0</span>
+          </div>
+        </div>
         <div class="search-bar">
           <input type="text" id="search-input" placeholder="Search by name, email, or phone..." class="search-input">
           <button id="search-btn" class="btn primary-btn">Search</button>
+          <select id="sort-select" style="padding: 10px; border-radius: 5px; border: 1px solid var(--border-color); background: white; cursor: pointer;">
+            <option value="createdAt-desc">Newest First</option>
+            <option value="createdAt-asc">Oldest First</option>
+            <option value="name-asc">Name (A-Z)</option>
+            <option value="name-desc">Name (Z-A)</option>
+          </select>
+        </div>
+        <div id="loading-indicator" style="display: none; text-align: center; padding: 20px; color: var(--text-sub);">
+          ⏳ Loading records...
         </div>
         <div class="records-grid" id="records-grid">
           <!-- Dynamically populated -->
@@ -112,6 +129,7 @@
       <div class="modal-actions">
         <button id="btn-export-excel" class="btn success-btn">Export Excel</button>
         <button id="btn-export-word" class="btn alt-btn">Export to Word (Tamil)</button>
+        <button id="btn-edit-record" class="btn alt-btn" style="background-color: #0d6efd;">Edit Record</button>
         <button id="btn-delete-record" class="btn danger-btn">Delete Record</button>
       </div>
     </div>
